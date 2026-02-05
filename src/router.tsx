@@ -1,11 +1,25 @@
-import Index from "./pages/Index";
+import { Navigate } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import Auth from "./pages/Auth";
+import MemberCenter from "./pages/MemberCenter";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export const routers = [
     {
       path: "/",
       name: 'home',
-      element: <Index />,
+      element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+    },
+    {
+      path: "/auth",
+      name: 'auth',
+      element: <Auth />,
+    },
+    {
+      path: "/member",
+      name: 'member',
+      element: <ProtectedRoute><MemberCenter /></ProtectedRoute>,
     },
     /* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */
     {
