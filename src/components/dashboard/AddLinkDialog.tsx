@@ -9,14 +9,28 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+interface LocalStorageHook {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addLink: (link: any) => void;
+}
+
 interface AddLinkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categoryId: string | null;
   onSuccess: () => void;
+  isAnonymous?: boolean;
+  localStorage?: LocalStorageHook;
 }
 
-export default function AddLinkDialog({ open, onOpenChange, categoryId, onSuccess }: AddLinkDialogProps) {
+export default function AddLinkDialog({ 
+  open, 
+  onOpenChange, 
+  categoryId, 
+  onSuccess,
+  isAnonymous = false,
+  localStorage: localStorageHook,
+}: AddLinkDialogProps) {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
@@ -27,34 +41,53 @@ export default function AddLinkDialog({ open, onOpenChange, categoryId, onSucces
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !categoryId) return;
+    if (!categoryId) return;
 
     setLoading(true);
 
-    const { error } = await supabase.from('links').insert({
-      user_id: user.id,
-      category_id: categoryId,
-      title,
-      url,
-      description: description || null,
-      link_type: linkType,
-      sort_order: Date.now(),
-    });
-
-    if (error) {
-      toast({
-        title: '添加失败',
-        description: error.message,
-        variant: 'destructive',
+    if (isAnonymous && localStorageHook) {
+      // 使用本地存储
+      localStorageHook.addLink({
+        category_id: categoryId,
+        title,
+        url,
+        description: description || null,
+        icon: null,
+        link_type: linkType,
+        sort_order: Date.now(),
       });
-      setLoading(false);
-      return;
-    }
 
-    toast({
-      title: '添加成功',
-      description: '链接已添加',
-    });
+      toast({
+        title: '添加成功',
+        description: '链接已保存到本地',
+      });
+    } else if (user) {
+      // 使用数据库
+      const { error } = await supabase.from('links').insert({
+        user_id: user.id,
+        category_id: categoryId,
+        title,
+        url,
+        description: description || null,
+        link_type: linkType,
+        sort_order: Date.now(),
+      });
+
+      if (error) {
+        toast({
+          title: '添加失败',
+          description: error.message,
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
+      toast({
+        title: '添加成功',
+        description: '链接已添加',
+      });
+    }
 
     setTitle('');
     setUrl('');

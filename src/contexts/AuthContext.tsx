@@ -125,10 +125,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // 迁移本地数据到数据库
+    if (data.user) {
+      await migrateLocalDataToDatabase(data.user.id);
+    }
+
     toast({
       title: '注册成功',
-      description: '欢迎使用智联导航中心！',
+      description: '欢迎使用智联导航中心！本地数据已同步到云端',
     });
+  };
+
+  const migrateLocalDataToDatabase = async (userId: string) => {
+    try {
+      // 获取本地存储的数据
+      const localCategories = localStorage.getItem('local_categories');
+      const localLinks = localStorage.getItem('local_links');
+
+      if (!localCategories && !localLinks) return;
+
+      const categories = localCategories ? JSON.parse(localCategories) : [];
+      const links = localLinks ? JSON.parse(localLinks) : [];
+
+      // 迁移分类
+      const categoryIdMap = new Map<string, string>();
+      
+      for (const category of categories) {
+        const { data: newCategory } = await supabase
+          .from('categories')
+          .insert({
+            user_id: userId,
+            name: category.name,
+            icon: category.icon,
+            color: category.color,
+            sort_order: category.sort_order,
+            is_custom: true,
+          })
+          .select()
+          .single();
+
+        if (newCategory) {
+          categoryIdMap.set(category.id, newCategory.id);
+        }
+      }
+
+      // 迁移链接
+      for (const link of links) {
+        const newCategoryId = categoryIdMap.get(link.category_id);
+        if (newCategoryId) {
+          await supabase.from('links').insert({
+            user_id: userId,
+            category_id: newCategoryId,
+            title: link.title,
+            url: link.url,
+            description: link.description,
+            icon: link.icon,
+            link_type: link.link_type,
+            sort_order: link.sort_order,
+            click_count: link.click_count || 0,
+          });
+        }
+      }
+
+      // 清除本地数据
+      localStorage.removeItem('local_categories');
+      localStorage.removeItem('local_links');
+      localStorage.removeItem('anonymous_usage_count');
+      
+      console.log('Local data migrated successfully');
+    } catch (error) {
+      console.error('Error migrating local data:', error);
+    }
   };
 
   const signIn = async (email: string, password: string) => {

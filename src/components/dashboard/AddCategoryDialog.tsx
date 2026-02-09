@@ -7,15 +7,28 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+interface LocalStorageHook {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addCategory: (category: any) => void;
+}
+
 interface AddCategoryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  isAnonymous?: boolean;
+  localStorage?: LocalStorageHook;
 }
 
 const EMOJI_OPTIONS = ['📁', '🔖', '⭐', '💼', '🎨', '🎯', '📱', '💻', '🌐', '🚀', '📚', '🎵'];
 
-export default function AddCategoryDialog({ open, onOpenChange, onSuccess }: AddCategoryDialogProps) {
+export default function AddCategoryDialog({ 
+  open, 
+  onOpenChange, 
+  onSuccess,
+  isAnonymous = false,
+  localStorage: localStorageHook,
+}: AddCategoryDialogProps) {
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('📁');
   const [loading, setLoading] = useState(false);
@@ -24,32 +37,47 @@ export default function AddCategoryDialog({ open, onOpenChange, onSuccess }: Add
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
 
     setLoading(true);
 
-    const { error } = await supabase.from('categories').insert({
-      user_id: user.id,
-      name,
-      icon,
-      sort_order: Date.now(),
-      is_custom: true,
-    });
-
-    if (error) {
-      toast({
-        title: '创建失败',
-        description: error.message,
-        variant: 'destructive',
+    if (isAnonymous && localStorageHook) {
+      // 使用本地存储
+      localStorageHook.addCategory({
+        name,
+        icon,
+        color: null,
+        sort_order: Date.now(),
       });
-      setLoading(false);
-      return;
-    }
+      
+      toast({
+        title: '创建成功',
+        description: '分类已保存到本地',
+      });
+    } else if (user) {
+      // 使用数据库
+      const { error } = await supabase.from('categories').insert({
+        user_id: user.id,
+        name,
+        icon,
+        sort_order: Date.now(),
+        is_custom: true,
+      });
 
-    toast({
-      title: '创建成功',
-      description: '分类已创建',
-    });
+      if (error) {
+        toast({
+          title: '创建失败',
+          description: error.message,
+          variant: 'destructive',
+        });
+        setLoading(false);
+        return;
+      }
+
+      toast({
+        title: '创建成功',
+        description: '分类已创建',
+      });
+    }
 
     setName('');
     setIcon('📁');

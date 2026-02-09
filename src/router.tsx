@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
+import DashboardAnonymous from "./pages/DashboardAnonymous";
 import Auth from "./pages/Auth";
 import MemberCenter from "./pages/MemberCenter";
 import NotFound from "./pages/NotFound";
@@ -9,7 +9,7 @@ export const routers = [
     {
       path: "/",
       name: 'home',
-      element: <ProtectedRoute><Dashboard /></ProtectedRoute>,
+      element: <ProtectedRoute><DashboardAnonymous /></ProtectedRoute>,
     },
     {
       path: "/auth",
