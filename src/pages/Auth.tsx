@@ -14,6 +14,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('signin');
   const { signUp, signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -27,11 +28,23 @@ export default function Auth() {
       navigate('/');
     } catch (error) {
       const message = error instanceof Error ? error.message : '注册失败，请重试';
-      toast({
-        title: '注册失败',
-        description: message,
-        variant: 'destructive',
-      });
+      
+      // 检查是否是用户已存在的错误
+      if (message.includes('already registered') || message.includes('already exists')) {
+        toast({
+          title: '该邮箱已注册',
+          description: '请直接登录或使用其他邮箱注册',
+          variant: 'destructive',
+        });
+        // 自动切换到登录页面
+        setTimeout(() => setActiveTab('signin'), 2000);
+      } else {
+        toast({
+          title: '注册失败',
+          description: message,
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -75,7 +88,7 @@ export default function Auth() {
             <CardDescription>登录或注册开始管理您的导航</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">登录</TabsTrigger>
                 <TabsTrigger value="signup">注册</TabsTrigger>
