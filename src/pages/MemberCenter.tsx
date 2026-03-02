@@ -12,10 +12,10 @@ const MEMBERSHIP_TIERS = [
     price: '¥0',
     period: '永久',
     features: [
-      '匿名使用',
+      '10个自定义分类',
+      '20个链接',
+      '导出当前链接',
       '本地数据存储',
-      '基础分类管理',
-      '有限链接数量',
     ],
     icon: Sparkles,
     color: 'text-muted-foreground',
@@ -24,14 +24,17 @@ const MEMBERSHIP_TIERS = [
   {
     id: 'basic',
     name: '普通会员',
-    price: '¥19',
+    price: '¥1.9',
     period: '/月',
+    quarterlyPrice: '¥9.9',
     features: [
       '20个自定义分类',
       '每分类5个链接',
       '拖拽排序',
       '搜索功能',
-      '数据导出',
+      '还原功能',
+      '历史记录',
+      '导出当前链接',
     ],
     icon: Check,
     color: 'text-primary',
@@ -41,8 +44,8 @@ const MEMBERSHIP_TIERS = [
   {
     id: 'vip',
     name: 'VIP会员',
-    price: '¥99',
-    period: '/月',
+    price: '¥19.9',
+    period: '/年',
     features: [
       '普通会员所有功能',
       '50个自定义分类',
@@ -51,6 +54,7 @@ const MEMBERSHIP_TIERS = [
       'AI编程助手',
       'AI视频生成',
       'AI文生图',
+      '导出所有链接',
     ],
     icon: Crown,
     color: 'text-secondary',
@@ -60,7 +64,7 @@ const MEMBERSHIP_TIERS = [
   {
     id: 'city_agent',
     name: '城市代理',
-    price: '¥999',
+    price: '¥199',
     period: '/永久',
     features: [
       'VIP会员所有功能',
@@ -68,7 +72,9 @@ const MEMBERSHIP_TIERS = [
       '每分类最多999个链接',
       '分享收益50%',
       '分享统计数据',
+      '导出所有链接',
       '优先客服支持',
+      '申请表单功能',
     ],
     icon: Share2,
     color: 'text-accent',
@@ -154,8 +160,18 @@ export default function MemberCenter() {
                     </div>
                     <CardTitle>{tier.name}</CardTitle>
                     <CardDescription>
-                      <span className="text-3xl font-bold text-foreground">{tier.price}</span>
-                      <span className="text-muted-foreground">{tier.period}</span>
+                      <div className="space-y-1">
+                        <div>
+                          <span className="text-3xl font-bold text-foreground">{tier.price}</span>
+                          <span className="text-muted-foreground">{tier.period}</span>
+                        </div>
+                        {tier.quarterlyPrice && (
+                          <div className="text-sm">
+                            <span className="text-lg font-semibold text-foreground">{tier.quarterlyPrice}</span>
+                            <span className="text-muted-foreground">/季</span>
+                          </div>
+                        )}
+                      </div>
                     </CardDescription>
                   </CardHeader>
                   

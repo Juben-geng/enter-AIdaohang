@@ -45,57 +45,79 @@ export default function AddLinkDialog({
 
     setLoading(true);
 
-    if (isAnonymous && localStorageHook) {
-      // 使用本地存储
-      localStorageHook.addLink({
-        category_id: categoryId,
-        title,
-        url,
-        description: description || null,
-        icon: null,
-        link_type: linkType,
-        sort_order: Date.now(),
-      });
-
-      toast({
-        title: '添加成功',
-        description: '链接已保存到本地',
-      });
-    } else if (user) {
-      // 使用数据库
-      const { error } = await supabase.from('links').insert({
-        user_id: user.id,
-        category_id: categoryId,
-        title,
-        url,
-        description: description || null,
-        link_type: linkType,
-        sort_order: Date.now(),
-      });
-
-      if (error) {
-        toast({
-          title: '添加失败',
-          description: error.message,
-          variant: 'destructive',
+    try {
+      if (isAnonymous && localStorageHook) {
+        // 使用本地存储
+        localStorageHook.addLink({
+          category_id: categoryId,
+          title,
+          url,
+          description: description || null,
+          icon: null,
+          link_type: linkType,
+          sort_order: Date.now(),
         });
+
+        toast({
+          title: '添加成功',
+          description: '链接已保存到本地',
+        });
+
+        // 重置表单
+        setTitle('');
+        setUrl('');
+        setDescription('');
+        setLinkType('web');
         setLoading(false);
-        return;
+        onOpenChange(false);
+        onSuccess();
+      } else if (user) {
+        // 使用数据库
+        const { data, error } = await supabase.from('links').insert({
+          user_id: user.id,
+          category_id: categoryId,
+          title,
+          url,
+          description: description || null,
+          link_type: linkType,
+          sort_order: Date.now(),
+        }).select().single();
+
+        if (error) {
+          throw error;
+        }
+
+        // 确保数据插入成功
+        if (data) {
+          toast({
+            title: '添加成功',
+            description: '链接已添加',
+          });
+
+          // 重置表单
+          setTitle('');
+          setUrl('');
+          setDescription('');
+          setLinkType('web');
+          setLoading(false);
+          onOpenChange(false);
+          
+          // 延迟调用onSuccess确保数据库已更新
+          setTimeout(() => {
+            onSuccess();
+          }, 100);
+        }
       }
-
+    } catch (error) {
+      console.error('Add link error:', error);
+      const message = error instanceof Error ? error.message : '添加失败，请重试';
       toast({
-        title: '添加成功',
-        description: '链接已添加',
+        title: '添加失败',
+        description: message,
+        variant: 'destructive',
       });
+      setLoading(false);
     }
-
-    setTitle('');
-    setUrl('');
-    setDescription('');
-    setLinkType('web');
-    setLoading(false);
-    onOpenChange(false);
-    onSuccess();
   };
 
   return (

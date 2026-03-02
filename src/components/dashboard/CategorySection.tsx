@@ -48,6 +48,26 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category.id]);
 
+  // 添加实时订阅
+  useEffect(() => {
+    const channel = supabase
+      .channel(`links_${category.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'links',
+        filter: `category_id=eq.${category.id}`,
+      }, () => {
+        fetchLinks();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category.id]);
+
   const fetchLinks = async () => {
     const { data, error } = await supabase
       .from('links')

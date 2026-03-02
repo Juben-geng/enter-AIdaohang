@@ -1,0 +1,34 @@
+-- RLS策略 - Profession tags
+CREATE POLICY "Anyone can view active profession tags" ON profession_tags 
+FOR SELECT USING (is_active = true);
+
+-- RLS策略 - User professions
+CREATE POLICY "Users can view own professions" ON user_professions 
+FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own professions" ON user_professions 
+FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own professions" ON user_professions 
+FOR DELETE USING (auth.uid() = user_id);
+
+-- RLS策略 - Navigation square
+CREATE POLICY "Anyone can view approved navigation" ON navigation_square 
+FOR SELECT USING (is_approved = true OR auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own navigation" ON navigation_square 
+FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own navigation" ON navigation_square 
+FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own navigation" ON navigation_square 
+FOR DELETE USING (auth.uid() = user_id);
+
+-- RLS策略 - System configs
+CREATE POLICY "Anyone can view public configs" ON system_configs 
+FOR SELECT USING (true);
+
+-- RLS策略 - Tutorial steps
+CREATE POLICY "Anyone can view active tutorial steps" ON tutorial_steps 
+FOR SELECT USING (is_active = true);

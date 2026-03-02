@@ -1,0 +1,53 @@
+-- 创建职业标签表
+CREATE TABLE IF NOT EXISTS profession_tags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  icon TEXT,
+  sort_order INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 创建用户职业关联表
+CREATE TABLE IF NOT EXISTS user_professions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  profession_id UUID REFERENCES profession_tags(id) ON DELETE CASCADE,
+  selected_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, profession_id)
+);
+
+-- 创建导航广场表
+CREATE TABLE IF NOT EXISTS navigation_square (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  url TEXT NOT NULL,
+  description TEXT,
+  category TEXT,
+  is_approved BOOLEAN DEFAULT false,
+  view_count INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 创建系统配置表
+CREATE TABLE IF NOT EXISTS system_configs (
+  key TEXT PRIMARY KEY,
+  value JSONB,
+  description TEXT,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 创建教程步骤表
+CREATE TABLE IF NOT EXISTS tutorial_steps (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  step_number INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  video_url TEXT,
+  image_url TEXT,
+  is_active BOOLEAN DEFAULT true,
+  sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
