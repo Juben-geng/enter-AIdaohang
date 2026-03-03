@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, Trash2, Edit } from 'lucide-react';
+import { Plus, MoreVertical, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import LinkCard from './LinkCard';
+import ExportButton from '@/components/ExportButton';
 import { useToast } from '@/hooks/use-toast';
 
 interface Category {
@@ -113,23 +114,26 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
           <h3 className="text-lg font-semibold">{category.name}</h3>
           <span className="text-xs text-muted-foreground">({links.length})</span>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreVertical className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onAddLink(category.id)}>
-              <Plus className="w-4 h-4 mr-2" />
-              添加链接
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleDeleteCategory} className="text-destructive">
-              <Trash2 className="w-4 h-4 mr-2" />
-              删除分类
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <ExportButton categoryId={category.id} size="sm" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onAddLink(category.id)}>
+                <Plus className="w-4 h-4 mr-2" />
+                添加链接
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDeleteCategory} className="text-destructive">
+                <Trash2 className="w-4 h-4 mr-2" />
+                删除分类
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="space-y-2">

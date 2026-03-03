@@ -21,6 +21,8 @@ import CategorySection from '@/components/dashboard/CategorySection';
 import AddCategoryDialog from '@/components/dashboard/AddCategoryDialog';
 import AddLinkDialog from '@/components/dashboard/AddLinkDialog';
 import LoginPromptDialog from '@/components/LoginPromptDialog';
+import OnboardingFlow from '@/components/OnboardingFlow';
+import ExportButton from '@/components/ExportButton';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
@@ -135,6 +137,9 @@ export default function DashboardAnonymous() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary-light/5 to-secondary/5">
+      {/* 首次登录引导 */}
+      <OnboardingFlow />
+      
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -163,6 +168,8 @@ export default function DashboardAnonymous() {
           </div>
 
           <div className="flex items-center gap-3">
+            {!isAnonymous && <ExportButton />}
+            
             <Button
               variant="outline"
               size="sm"
