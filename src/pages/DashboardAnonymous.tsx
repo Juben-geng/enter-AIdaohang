@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAnonymousUsage } from '@/hooks/useAnonymousUsage';
@@ -25,6 +25,20 @@ import OnboardingFlow from '@/components/OnboardingFlow';
 import ExportButton from '@/components/ExportButton';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface Category {
   id: string;
@@ -70,7 +84,7 @@ export default function DashboardAnonymous() {
     }
   }, [shouldPromptLogin, isAnonymous]);
 
-  const fetchDbCategories = async () => {
+  const fetchDbCategories = useCallback(async () => {
     if (!user) return;
     
     setLoading(true);
@@ -84,7 +98,43 @@ export default function DashboardAnonymous() {
       setDbCategories(data);
     }
     setLoading(false);
-  };
+  }, [user]);
+
+  // 配置拖拽传感器
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor)
+  );
+
+  // 处理分类拖拽
+  const handleCategoryDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = categories.findIndex((cat) => cat.id === active.id);
+    const newIndex = categories.findIndex((cat) => cat.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(categories, oldIndex, newIndex).map((cat, idx) => ({
+      ...cat,
+      sort_order: idx,
+    }));
+
+    if (user) {
+      setDbCategories(reordered);
+      await Promise.all(
+        reordered.map((cat) =>
+          supabase.from('categories').update({ sort_order: cat.sort_order }).eq('id', cat.id)
+        )
+      );
+    } else {
+      localStorage.updateCategories(reordered);
+    }
+  }, [categories, user, localStorage]);
 
   const handleAddCategory = () => {
     if (isAnonymous) {

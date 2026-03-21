@@ -92,48 +92,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, referralCode?: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-      },
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            referred_by_code: referralCode,
+          },
+        },
+      });
 
-    if (error) throw error;
-
-    // 如果有邀请码，处理邀请关系
-    if (referralCode && data.user) {
-      const { data: referrer } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('referral_code', referralCode)
-        .single();
-
-      if (referrer) {
-        await supabase
-          .from('profiles')
-          .update({ referred_by: referrer.id })
-          .eq('id', data.user.id);
-
-        // 创建邀请记录
-        await supabase.from('referrals').insert({
-          referrer_id: referrer.id,
-          referee_id: data.user.id,
-          referral_type: 'free_signup',
-        });
+      if (error) {
+        console.error('SignUp error:', error);
+        throw new Error(error.message || '注册失败，请重试');
       }
-    }
 
-    // 迁移本地数据到数据库
-    if (data.user) {
-      await migrateLocalDataToDatabase(data.user.id);
-    }
+      if (!data.user) {
+        throw new Error('注册失败，未返回用户信息');
+      }
 
-    toast({
-      title: '注册成功',
-      description: '欢迎使用智联导航中心！本地数据已同步到云端',
-    });
+      // 如果有邀请码，处理邀请关系
+      if (referralCode && data.user) {
+        const { data: referrer } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('referral_code', referralCode)
+          .single();
+
+        if (referrer) {
+          await supabase
+            .from('profiles')
+            .update({ referred_by: referrer.id })
+            .eq('id', data.user.id);
+
+          // 创建邀请记录
+          await supabase.from('referrals').insert({
+            referrer_id: referrer.id,
+            referee_id: data.user.id,
+            referral_type: 'free_signup',
+          });
+        }
+      }
+
+      // 迁移本地数据到数据库
+      if (data.user) {
+        await migrateLocalDataToDatabase(data.user.id);
+      }
+
+      toast({
+        title: '注册成功',
+        description: '欢迎使用智联导航中心！本地数据已同步到云端',
+      });
+    } catch (error) {
+      console.error('Signup failed:', error);
+      throw error;
+    }
   };
 
   const migrateLocalDataToDatabase = async (userId: string) => {
@@ -199,17 +214,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) throw error;
+      if (error) {
+        console.error('SignIn error:', error);
+        // 提供更友好的错误信息
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('邮箱或密码错误，请检查后重试');
+        }
+        throw new Error(error.message || '登录失败，请重试');
+      }
 
-    toast({
-      title: '登录成功',
-      description: '欢迎回来！',
-    });
+      if (!data.user) {
+        throw new Error('登录失败，未返回用户信息');
+      }
+
+      toast({
+        title: '登录成功',
+        description: '欢迎回来！',
+      });
+    } catch (error) {
+      console.error('Sign in failed:', error);
+      throw error;
+    }
   };
 
   const signOut = async () => {

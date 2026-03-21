@@ -21,22 +21,49 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 验证邮箱格式
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: '邮箱格式错误',
+        description: '请输入有效的邮箱地址',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // 验证密码长度
+    if (password.length < 6) {
+      toast({
+        title: '密码过短',
+        description: '密码至少需要6个字符',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       await signUp(email, password, referralCode || undefined);
-      navigate('/');
+      toast({
+        title: '注册成功！',
+        description: '正在跳转到主页...',
+      });
+      setTimeout(() => navigate('/'), 1000);
     } catch (error) {
+      console.error('Signup error:', error);
       const message = error instanceof Error ? error.message : '注册失败，请重试';
       
       // 检查是否是用户已存在的错误
-      if (message.includes('already registered') || message.includes('already exists')) {
+      if (message.includes('already') || message.includes('exists') || message.includes('registered')) {
         toast({
           title: '该邮箱已注册',
-          description: '请直接登录或使用其他邮箱注册',
+          description: '正在为您切换到登录页面...',
           variant: 'destructive',
         });
-        // 自动切换到登录页面
+        // 自动切换到登录页面并填充邮箱
         setTimeout(() => setActiveTab('signin'), 2000);
       } else {
         toast({
@@ -52,12 +79,29 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 验证邮箱格式
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: '邮箱格式错误',
+        description: '请输入有效的邮箱地址',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       await signIn(email, password);
-      navigate('/');
+      toast({
+        title: '登录成功！',
+        description: '正在跳转到主页...',
+      });
+      setTimeout(() => navigate('/'), 1000);
     } catch (error) {
+      console.error('Signin error:', error);
       const message = error instanceof Error ? error.message : '登录失败，请重试';
       toast({
         title: '登录失败',
