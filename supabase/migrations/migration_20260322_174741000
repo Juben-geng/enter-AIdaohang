@@ -1,0 +1,63 @@
+-- 创建触发器函数：自动为新注册用户创建profile
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  INSERT INTO public.profiles (
+    id,
+    email,
+    membership_type,
+    referral_code,
+    location_count,
+    has_seen_tutorial,
+    profession_selected,
+    created_at,
+    updated_at
+  )
+  VALUES (
+    NEW.id,
+    NEW.email,
+    'free',
+    SUBSTRING(MD5(NEW.id::text || NOW()::text) FROM 1 FOR 8),
+    0,
+    false,
+    false,
+    NOW(),
+    NOW()
+  );
+  RETURN NEW;
+END;
+$$;
+
+-- 删除旧触发器（如果存在）
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+
+-- 创建新触发器
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
+
+-- 确保RLS策略正确
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- 删除旧策略
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON profiles;
+
+-- 创建新策略
+CREATE POLICY "Users can view own profile"
+  ON profiles FOR SELECT
+  USING (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile"
+  ON profiles FOR UPDATE
+  USING (auth.uid() = id);
+
+CREATE POLICY "Enable insert for service role"
+  ON profiles FOR INSERT
+  WITH CHECK (true);

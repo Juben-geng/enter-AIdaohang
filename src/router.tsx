@@ -8,6 +8,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import SystemConfig from "./pages/admin/SystemConfig";
 import NavigationSquareManagement from "./pages/admin/NavigationSquareManagement";
+import TestAuth from "./pages/TestAuth";
 
 export const routers = [
     {
@@ -24,6 +25,11 @@ export const routers = [
       path: "/member",
       name: 'member',
       element: <ProtectedRoute><MemberCenter /></ProtectedRoute>,
+    },
+    {
+      path: "/test-auth",
+      name: 'test-auth',
+      element: <TestAuth />,
     },
     {
       path: "/admin",
