@@ -53,7 +53,7 @@ export default function TutorialVideo({ open, onOpenChange, onComplete }: Tutori
     {
       id: '1',
       step_number: 1,
-      title: '欢迎使用智联导航中心',
+      title: '欢迎使用旅游AI工具导航',
       description: '让您的导航更智能，让您的分享更便捷。通过简单的步骤，快速上手所有功能。',
       video_url: null,
       image_url: null,

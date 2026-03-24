@@ -1,0 +1,14 @@
+-- 更新职业标签为旅游行业细分场景
+-- 先清空现有数据
+TRUNCATE profession_tags CASCADE;
+
+-- 插入旅游行业职业标签
+INSERT INTO profession_tags (name, icon, sort_order, is_active, created_at) VALUES
+  ('出境游', '🌍', 1, true, NOW()),
+  ('国内游', '🏞️', 2, true, NOW()),
+  ('定制游', '✨', 3, true, NOW()),
+  ('团队游', '👥', 4, true, NOW()),
+  ('自由行', '🎒', 5, true, NOW()),
+  ('亲子游', '👨‍👩‍👧‍👦', 6, true, NOW()),
+  ('蜜月游', '💑', 7, true, NOW()),
+  ('商务差旅', '💼', 8, true, NOW());

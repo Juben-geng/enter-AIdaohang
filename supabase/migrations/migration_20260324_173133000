@@ -1,0 +1,103 @@
+-- 修改触发器函数：注册时自动复制预设分类和链接
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  preset_cat RECORD;
+  new_cat_id UUID;
+BEGIN
+  -- 1. 创建用户profile
+  INSERT INTO public.profiles (
+    id,
+    email,
+    membership_type,
+    referral_code,
+    location_count,
+    has_seen_tutorial,
+    profession_selected,
+    created_at,
+    updated_at
+  )
+  VALUES (
+    NEW.id,
+    NEW.email,
+    'free',
+    SUBSTRING(MD5(NEW.id::text || NOW()::text) FROM 1 FOR 8),
+    0,
+    false,
+    false,
+    NOW(),
+    NOW()
+  );
+
+  -- 2. 复制预设分类和链接到用户账户
+  FOR preset_cat IN 
+    SELECT * FROM preset_categories 
+    WHERE industry = 'travel' 
+    ORDER BY sort_order
+  LOOP
+    -- 复制分类
+    INSERT INTO categories (
+      user_id,
+      name,
+      icon,
+      color,
+      sort_order,
+      is_custom,
+      created_at,
+      updated_at
+    ) VALUES (
+      NEW.id,
+      preset_cat.name,
+      preset_cat.icon,
+      preset_cat.color,
+      preset_cat.sort_order,
+      false, -- 标记为非自定义（预设）
+      NOW(),
+      NOW()
+    ) RETURNING id INTO new_cat_id;
+
+    -- 复制该分类下的所有链接
+    INSERT INTO links (
+      user_id,
+      category_id,
+      title,
+      url,
+      description,
+      icon,
+      link_type,
+      sort_order,
+      click_count,
+      created_at,
+      updated_at
+    )
+    SELECT
+      NEW.id,
+      new_cat_id,
+      pl.title,
+      pl.url,
+      pl.description,
+      pl.icon,
+      pl.link_type,
+      pl.sort_order,
+      0,
+      NOW(),
+      NOW()
+    FROM preset_links pl
+    WHERE pl.category_id = preset_cat.id
+    ORDER BY pl.sort_order;
+  END LOOP;
+
+  RETURN NEW;
+END;
+$$;
+
+-- 重新创建触发器
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();

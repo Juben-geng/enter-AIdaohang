@@ -189,7 +189,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       toast({
         title: '🎉 注册成功',
-        description: '欢迎加入智联导航中心！',
+        description: '欢迎来到智慧旅游平台！',
       });
       
       console.log('✅ [注册] 注册流程完成');

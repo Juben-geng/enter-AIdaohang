@@ -122,7 +122,8 @@ export default function Auth() {
               <Link2 className="w-8 h-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold gradient-text">智联导航中心</h1>
+          <h1 className="text-4xl font-bold gradient-text">旅游AI工具导航</h1>
+          <p className="text-muted-foreground text-lg">AI赋能，智慧旅游</p>
           <p className="text-muted-foreground">让您的导航更智能，让您的分享更便捷</p>
         </div>
 

@@ -5,13 +5,13 @@
 
 @layer base {
   :root {
-    /* Brand Colors - Tech Blue & Smart Purple */
-    --primary: 255 70% 55%; /* #6366F1 - Indigo */
-    --primary-light: 255 70% 95%; /* #EBE9FF */
-    --primary-dark: 255 70% 28%; /* #1E1B4B */
+    /* Brand Colors - Travel Industry Theme */
+    --primary: 207 82% 51%; /* #1E88E5 - Ocean Blue */
+    --primary-light: 207 82% 95%; /* #E3F2FD */
+    --primary-dark: 207 82% 28%; /* #0D47A1 */
     
-    --secondary: 270 50% 60%; /* #8B5CF6 - Purple */
-    --accent: 25 95% 53%; /* #F59E0B - Orange */
+    --secondary: 33 100% 50%; /* #FF9800 - Sunshine Orange */
+    --accent: 122 39% 49%; /* #4CAF50 - Nature Green */
     
     /* Neutrals */
     --background: 240 5% 98%; /* #F8F9FC */
@@ -40,10 +40,10 @@
     
     --radius: 0.75rem;
     
-    /* Gradients */
-    --gradient-brand: linear-gradient(135deg, hsl(255 70% 55%) 0%, hsl(270 50% 60%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(0 84% 60%) 100%);
-    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(240 5% 98%) 100%);
+    /* Gradients - Travel Theme */
+    --gradient-brand: linear-gradient(135deg, hsl(207 82% 51%) 0%, hsl(33 100% 50%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(33 100% 50%) 0%, hsl(122 39% 49%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(207 82% 98%) 100%);
     
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
@@ -66,12 +66,12 @@
     --popover: 240 6% 16%;
     --popover-foreground: 240 5% 98%;
     
-    --primary: 255 70% 65%;
-    --primary-light: 255 70% 20%;
-    --primary-dark: 255 70% 85%;
+    --primary: 207 82% 65%;
+    --primary-light: 207 82% 20%;
+    --primary-dark: 207 82% 85%;
     
-    --secondary: 270 50% 70%;
-    --accent: 25 95% 63%;
+    --secondary: 33 100% 60%;
+    --accent: 122 39% 59%;
     
     --primary-foreground: 240 8% 12%;
     --secondary-foreground: 240 8% 12%;
@@ -88,9 +88,9 @@
     --input: 240 6% 25%;
     --ring: 255 70% 65%;
     
-    /* Dark mode gradients */
-    --gradient-brand: linear-gradient(135deg, hsl(255 70% 65%) 0%, hsl(270 50% 70%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(25 95% 63%) 0%, hsl(0 84% 60%) 100%);
+    /* Dark mode gradients - Travel Theme */
+    --gradient-brand: linear-gradient(135deg, hsl(207 82% 65%) 0%, hsl(33 100% 60%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(33 100% 60%) 0%, hsl(122 39% 59%) 100%);
     --gradient-surface: linear-gradient(180deg, hsl(240 6% 16%) 0%, hsl(240 8% 12%) 100%);
     
     /* Dark sidebar */

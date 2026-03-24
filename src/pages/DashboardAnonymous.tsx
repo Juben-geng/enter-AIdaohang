@@ -194,7 +194,7 @@ export default function DashboardAnonymous() {
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-bold gradient-text">智联导航</h1>
+            <h1 className="text-2xl font-bold gradient-text">旅游AI工具导航</h1>
             <span className={`px-3 py-1 text-xs font-semibold rounded-full ${badge.class}`}>
               {badge.label}
             </span>
@@ -285,7 +285,7 @@ export default function DashboardAnonymous() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-light rounded-full mb-4">
               <Plus className="w-10 h-10 text-primary" />
             </div>
-            <h2 className="text-2xl font-bold">欢迎使用智联导航</h2>
+            <h2 className="text-2xl font-bold">欢迎来到智慧旅游平台</h2>
             <p className="text-muted-foreground max-w-md mx-auto">
               无需注册即可开始使用！您有10次免费试用机会，创建您的第一个分类开始管理链接。
             </p>

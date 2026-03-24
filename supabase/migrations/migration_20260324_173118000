@@ -1,0 +1,185 @@
+-- 创建预设分类表
+CREATE TABLE IF NOT EXISTS preset_categories (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  icon TEXT,
+  color TEXT,
+  sort_order INTEGER DEFAULT 0,
+  industry TEXT DEFAULT 'travel',
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 创建预设链接表
+CREATE TABLE IF NOT EXISTS preset_links (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  category_id UUID REFERENCES preset_categories(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  url TEXT NOT NULL,
+  description TEXT,
+  icon TEXT,
+  link_type TEXT DEFAULT 'web',
+  sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 创建索引
+CREATE INDEX IF NOT EXISTS idx_preset_categories_industry ON preset_categories(industry);
+CREATE INDEX IF NOT EXISTS idx_preset_categories_sort ON preset_categories(sort_order);
+CREATE INDEX IF NOT EXISTS idx_preset_links_category ON preset_links(category_id);
+CREATE INDEX IF NOT EXISTS idx_preset_links_sort ON preset_links(sort_order);
+
+-- 插入旅游行业预设分类
+INSERT INTO preset_categories (name, icon, color, sort_order, description) VALUES
+  ('行程规划', '📋', '#1E88E5', 1, '行程规划与管理工具'),
+  ('签证服务', '🛂', '#FF9800', 2, '签证办理与查询工具'),
+  ('酒店预订', '🏨', '#4CAF50', 3, '酒店查询与预订平台'),
+  ('机票查询', '✈️', '#2196F3', 4, '机票搜索与比价工具'),
+  ('景点门票', '🎫', '#E91E63', 5, '景点门票预订平台'),
+  ('租车服务', '🚗', '#9C27B0', 6, '汽车租赁服务平台'),
+  ('翻译工具', '🌐', '#00BCD4', 7, '多语言翻译工具'),
+  ('攻略参考', '📚', '#FF5722', 8, '旅游攻略与游记分享');
+
+-- 插入预设链接（行程规划）
+WITH category_id AS (
+  SELECT id FROM preset_categories WHERE name = '行程规划' LIMIT 1
+)
+INSERT INTO preset_links (category_id, title, url, description, sort_order) 
+SELECT 
+  category_id.id,
+  title,
+  url,
+  description,
+  sort_order
+FROM category_id, (VALUES
+  ('飞书文档', 'https://www.feishu.cn/product/docs', '在线协作文档，规划行程', 1),
+  ('Notion', 'https://www.notion.so', '全能工作空间，行程管理', 2),
+  ('石墨文档', 'https://shimo.im', '多人协作文档工具', 3),
+  ('钉钉文档', 'https://www.dingtalk.com', '企业级协作平台', 4)
+) AS t(title, url, description, sort_order);
+
+-- 插入预设链接（签证服务）
+WITH category_id AS (
+  SELECT id FROM preset_categories WHERE name = '签证服务' LIMIT 1
+)
+INSERT INTO preset_links (category_id, title, url, description, sort_order) 
+SELECT 
+  category_id.id,
+  title,
+  url,
+  description,
+  sort_order
+FROM category_id, (VALUES
+  ('携程签证', 'https://vacations.ctrip.com/visa', '携程签证服务平台', 1),
+  ('飞猪签证', 'https://visa.fliggy.com', '飞猪签证办理', 2),
+  ('百程旅行', 'https://www.baicheng.com', '专业签证服务', 3)
+) AS t(title, url, description, sort_order);
+
+-- 插入预设链接（酒店预订）
+WITH category_id AS (
+  SELECT id FROM preset_categories WHERE name = '酒店预订' LIMIT 1
+)
+INSERT INTO preset_links (category_id, title, url, description, sort_order) 
+SELECT 
+  category_id.id,
+  title,
+  url,
+  description,
+  sort_order
+FROM category_id, (VALUES
+  ('Booking', 'https://www.booking.com', '全球酒店预订平台', 1),
+  ('携程酒店', 'https://hotels.ctrip.com', '国内酒店预订', 2),
+  ('美团酒店', 'https://i.meituan.com/hotel', '团购酒店优惠', 3),
+  ('Agoda', 'https://www.agoda.com/zh-cn', '亚洲酒店预订', 4)
+) AS t(title, url, description, sort_order);
+
+-- 插入预设链接（机票查询）
+WITH category_id AS (
+  SELECT id FROM preset_categories WHERE name = '机票查询' LIMIT 1
+)
+INSERT INTO preset_links (category_id, title, url, description, sort_order) 
+SELECT 
+  category_id.id,
+  title,
+  url,
+  description,
+  sort_order
+FROM category_id, (VALUES
+  ('去哪儿', 'https://flight.qunar.com', '机票比价平台', 1),
+  ('携程机票', 'https://flights.ctrip.com', '国内国际机票', 2),
+  ('飞猪', 'https://www.fliggy.com', '阿里旅行平台', 3),
+  ('天巡', 'https://www.skyscanner.com.cn', '全球机票搜索', 4)
+) AS t(title, url, description, sort_order);
+
+-- 插入预设链接（景点门票）
+WITH category_id AS (
+  SELECT id FROM preset_categories WHERE name = '景点门票' LIMIT 1
+)
+INSERT INTO preset_links (category_id, title, url, description, sort_order) 
+SELECT 
+  category_id.id,
+  title,
+  url,
+  description,
+  sort_order
+FROM category_id, (VALUES
+  ('美团门票', 'https://www.meituan.com/ticket', '景点门票团购', 1),
+  ('大众点评', 'https://www.dianping.com', '本地生活服务', 2),
+  ('驴妈妈', 'https://www.lvmama.com', '自助游门票', 3),
+  ('同程旅游', 'https://www.ly.com', '景点门票预订', 4)
+) AS t(title, url, description, sort_order);
+
+-- 插入预设链接（租车服务）
+WITH category_id AS (
+  SELECT id FROM preset_categories WHERE name = '租车服务' LIMIT 1
+)
+INSERT INTO preset_links (category_id, title, url, description, sort_order) 
+SELECT 
+  category_id.id,
+  title,
+  url,
+  description,
+  sort_order
+FROM category_id, (VALUES
+  ('神州租车', 'https://www.zuche.com', '全国连锁租车', 1),
+  ('一嗨租车', 'https://www.1hai.cn', '自驾租车服务', 2),
+  ('携程租车', 'https://cars.ctrip.com', '国内外租车', 3)
+) AS t(title, url, description, sort_order);
+
+-- 插入预设链接（翻译工具）
+WITH category_id AS (
+  SELECT id FROM preset_categories WHERE name = '翻译工具' LIMIT 1
+)
+INSERT INTO preset_links (category_id, title, url, description, sort_order) 
+SELECT 
+  category_id.id,
+  title,
+  url,
+  description,
+  sort_order
+FROM category_id, (VALUES
+  ('DeepL', 'https://www.deepl.com/translator', 'AI精准翻译', 1),
+  ('Google翻译', 'https://translate.google.com', '多语言翻译', 2),
+  ('有道翻译', 'https://fanyi.youdao.com', '中英互译工具', 3),
+  ('百度翻译', 'https://fanyi.baidu.com', '实用翻译工具', 4)
+) AS t(title, url, description, sort_order);
+
+-- 插入预设链接（攻略参考）
+WITH category_id AS (
+  SELECT id FROM preset_categories WHERE name = '攻略参考' LIMIT 1
+)
+INSERT INTO preset_links (category_id, title, url, description, sort_order) 
+SELECT 
+  category_id.id,
+  title,
+  url,
+  description,
+  sort_order
+FROM category_id, (VALUES
+  ('马蜂窝', 'https://www.mafengwo.cn', '旅游攻略社区', 1),
+  ('穷游网', 'https://www.qyer.com', '出境游攻略', 2),
+  ('小红书', 'https://www.xiaohongshu.com', '旅行笔记分享', 3),
+  ('知乎旅游', 'https://www.zhihu.com/topic/19551927', '旅游问答社区', 4)
+) AS t(title, url, description, sort_order);
