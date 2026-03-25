@@ -5,7 +5,7 @@ import { useAnonymousUsage } from '@/hooks/useAnonymousUsage';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, LogOut, User, Crown, LogIn } from 'lucide-react';
+import { Plus, Search, LogOut, User, Crown, LogIn, Sparkles, Users } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -220,6 +220,18 @@ export default function DashboardAnonymous() {
           <div className="flex items-center gap-3">
             {!isAnonymous && <ExportButton />}
             
+            {!isAnonymous && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => navigate('/ai-tools')}
+                className="bg-gradient-accent hidden sm:flex"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI助手
+              </Button>
+            )}
+            
             <Button
               variant="outline"
               size="sm"
@@ -261,6 +273,14 @@ export default function DashboardAnonymous() {
                   <DropdownMenuItem onClick={() => navigate('/member')}>
                     <Crown className="w-4 h-4 mr-2" />
                     会员中心
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/ai-tools')}>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    AI助手
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/crm/customers')}>
+                    <Users className="w-4 h-4 mr-2" />
+                    客户管理
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/profile')}>
                     <User className="w-4 h-4 mr-2" />

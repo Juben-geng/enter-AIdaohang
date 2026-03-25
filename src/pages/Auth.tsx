@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Link2, Sparkles } from 'lucide-react';
+import { Plane, Sparkles } from 'lucide-react';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
@@ -118,8 +118,8 @@ export default function Auth() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center space-y-2 animate-fade-in">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="p-3 bg-gradient-brand rounded-xl">
-              <Link2 className="w-8 h-8 text-white" />
+            <div className="p-3 bg-gradient-brand rounded-xl shadow-lg">
+              <Plane className="w-8 h-8 text-white" />
             </div>
           </div>
           <h1 className="text-4xl font-bold gradient-text">旅游AI工具导航</h1>

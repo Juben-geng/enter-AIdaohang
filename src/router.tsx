@@ -9,6 +9,8 @@ import Dashboard from "./pages/admin/Dashboard";
 import SystemConfig from "./pages/admin/SystemConfig";
 import NavigationSquareManagement from "./pages/admin/NavigationSquareManagement";
 import TestAuth from "./pages/TestAuth";
+import AITools from "./pages/ai/AITools";
+import CustomerList from "./pages/crm/CustomerList";
 
 export const routers = [
     {
@@ -30,6 +32,16 @@ export const routers = [
       path: "/test-auth",
       name: 'test-auth',
       element: <TestAuth />,
+    },
+    {
+      path: "/ai-tools",
+      name: 'ai-tools',
+      element: <ProtectedRoute><AITools /></ProtectedRoute>,
+    },
+    {
+      path: "/crm/customers",
+      name: 'crm-customers',
+      element: <ProtectedRoute><CustomerList /></ProtectedRoute>,
     },
     {
       path: "/admin",
