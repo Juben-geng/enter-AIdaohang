@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '@/integrations/supabase/client';
 
 interface UseAIStreamOptions {
   functionName: string;
@@ -43,9 +43,9 @@ export function useAIStream({ functionName, onComplete }: UseAIStreamOptions) {
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token || '';
+      const token = session?.access_token || SUPABASE_PUBLISHABLE_KEY;
 
-      await fetchEventSource(`${supabase.supabaseUrl}/functions/v1/${functionName}`, {
+      await fetchEventSource(`${SUPABASE_URL}/functions/v1/${functionName}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

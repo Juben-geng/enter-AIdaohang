@@ -5,6 +5,9 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://nkruesjlnmfbjqwjwcgp.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rcnVlc2psbm1mYmpxd2p3Y2dwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3Mzg5MzUsImV4cCI6MjA4NTMxNDkzNX0.MlgnurJOCDldZfTJWanQ9yg0HR_RSjmZz3s1nWt1AIo";
 
+// Export constants for use in hooks
+export { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY };
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 

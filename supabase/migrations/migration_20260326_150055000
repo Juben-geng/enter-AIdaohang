@@ -1,0 +1,49 @@
+-- 修复CRM RLS策略：允许用户直接管理自己创建的客户（不强制要求agency）
+
+-- 删除旧的customers策略
+DROP POLICY IF EXISTS "Agency members can view customers" ON customers;
+DROP POLICY IF EXISTS "Agency members can create customers" ON customers;
+DROP POLICY IF EXISTS "Agency members can update customers" ON customers;
+
+-- 创建新的简化策略：用户可以管理自己创建的客户
+CREATE POLICY "Users can view own customers"
+  ON customers FOR SELECT
+  USING (created_by = auth.uid());
+
+CREATE POLICY "Users can create customers"
+  ON customers FOR INSERT
+  WITH CHECK (created_by = auth.uid());
+
+CREATE POLICY "Users can update own customers"
+  ON customers FOR UPDATE
+  USING (created_by = auth.uid());
+
+CREATE POLICY "Users can delete own customers"
+  ON customers FOR DELETE
+  USING (created_by = auth.uid());
+
+-- 同样修复customer_trips
+DROP POLICY IF EXISTS "Agency members can view trips" ON customer_trips;
+CREATE POLICY "Users can view own trips"
+  ON customer_trips FOR SELECT
+  USING (created_by = auth.uid());
+
+CREATE POLICY "Users can create trips"
+  ON customer_trips FOR INSERT
+  WITH CHECK (created_by = auth.uid());
+
+-- 修复travel_orders
+DROP POLICY IF EXISTS "Agency members can view orders" ON travel_orders;
+DROP POLICY IF EXISTS "Agency members can create orders" ON travel_orders;
+
+CREATE POLICY "Users can view own orders"
+  ON travel_orders FOR SELECT
+  USING (created_by = auth.uid());
+
+CREATE POLICY "Users can create orders"
+  ON travel_orders FOR INSERT
+  WITH CHECK (created_by = auth.uid());
+
+-- 让agency_id可为空
+ALTER TABLE customers ALTER COLUMN agency_id DROP NOT NULL;
+ALTER TABLE travel_orders ALTER COLUMN agency_id DROP NOT NULL;

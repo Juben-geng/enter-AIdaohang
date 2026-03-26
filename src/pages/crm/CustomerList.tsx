@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Plus, Search, User, Phone, Mail, Tag } from 'lucide-react';
+import AddCustomerDialog from '@/components/crm/AddCustomerDialog';
 
 interface Customer {
   id: string;
@@ -27,6 +28,7 @@ export default function CustomerList() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
   // 检查权限
   const canAccessCRM = profile && ['basic', 'vip', 'city_agent', 'national_agent'].includes(profile.membership_type);
@@ -42,27 +44,32 @@ export default function CustomerList() {
       return;
     }
 
-    fetchCustomers();
-  }, [canAccessCRM]);
+    if (profile?.id) {
+      fetchCustomers();
+    }
+  }, [canAccessCRM, profile?.id]);
 
   const fetchCustomers = async () => {
     try {
       setLoading(true);
       
-      // 这里简化处理：直接查询用户创建的客户
-      // 实际应该通过 agency_members 表关联
       const { data, error } = await supabase
         .from('customers')
         .select('*')
+        .eq('created_by', profile?.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Fetch error:', error);
+        throw error;
+      }
+      
       setCustomers(data || []);
     } catch (error) {
       console.error('Error fetching customers:', error);
       toast({
         title: '加载失败',
-        description: '无法加载客户列表',
+        description: error instanceof Error ? error.message : '无法加载客户列表',
         variant: 'destructive',
       });
     } finally {
@@ -90,7 +97,7 @@ export default function CustomerList() {
               <p className="text-muted-foreground">管理您的客户信息和旅行需求</p>
             </div>
           </div>
-          <Button className="bg-gradient-brand">
+          <Button className="bg-gradient-brand" onClick={() => setShowAddDialog(true)}>
             <Plus className="w-4 h-4 mr-2" />
             添加客户
           </Button>
@@ -134,7 +141,7 @@ export default function CustomerList() {
                 {searchQuery ? '没有找到匹配的客户' : '开始添加您的第一个客户'}
               </p>
               {!searchQuery && (
-                <Button className="bg-gradient-brand">
+                <Button className="bg-gradient-brand" onClick={() => setShowAddDialog(true)}>
                   <Plus className="w-4 h-4 mr-2" />
                   添加客户
                 </Button>
@@ -239,6 +246,13 @@ export default function CustomerList() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Add Customer Dialog */}
+        <AddCustomerDialog
+          open={showAddDialog}
+          onOpenChange={setShowAddDialog}
+          onSuccess={fetchCustomers}
+        />
       </div>
     </div>
   );
