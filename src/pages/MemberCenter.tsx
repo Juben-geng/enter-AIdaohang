@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { ArrowLeft, Crown, Sparkles, Zap, Share2, Check } from 'lucide-react';
 
 const MEMBERSHIP_TIERS = [
@@ -159,20 +160,18 @@ export default function MemberCenter() {
                       <TierIcon className={`w-6 h-6 ${tier.color}`} />
                     </div>
                     <CardTitle>{tier.name}</CardTitle>
-                    <CardDescription>
-                      <div className="space-y-1">
-                        <div>
-                          <span className="text-3xl font-bold text-foreground">{tier.price}</span>
-                          <span className="text-muted-foreground">{tier.period}</span>
-                        </div>
-                        {tier.quarterlyPrice && (
-                          <div className="text-sm">
-                            <span className="text-lg font-semibold text-foreground">{tier.quarterlyPrice}</span>
-                            <span className="text-muted-foreground">/季</span>
-                          </div>
-                        )}
+                    <div className="space-y-1 mt-2">
+                      <div>
+                        <span className="text-3xl font-bold text-foreground">{tier.price}</span>
+                        <span className="text-muted-foreground">{tier.period}</span>
                       </div>
-                    </CardDescription>
+                      {tier.quarterlyPrice && (
+                        <div className="text-sm">
+                          <span className="text-lg font-semibold text-foreground">{tier.quarterlyPrice}</span>
+                          <span className="text-muted-foreground">/季</span>
+                        </div>
+                      )}
+                    </div>
                   </CardHeader>
                   
                   <CardContent className="space-y-4">

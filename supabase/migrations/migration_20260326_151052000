@@ -1,0 +1,46 @@
+-- 升级测试账号为VIP会员
+UPDATE profiles 
+SET 
+  membership_type = 'vip',
+  membership_expires_at = NOW() + INTERVAL '1 year',
+  updated_at = NOW()
+WHERE email = 'jygxb2464@126.com';
+
+-- 创建一个通用的测试函数，方便后续升级用户
+CREATE OR REPLACE FUNCTION upgrade_user_to_vip(user_email TEXT)
+RETURNS void AS $$
+BEGIN
+  UPDATE profiles 
+  SET 
+    membership_type = 'vip',
+    membership_expires_at = NOW() + INTERVAL '1 year',
+    updated_at = NOW()
+  WHERE email = user_email;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 创建城市代理升级函数
+CREATE OR REPLACE FUNCTION upgrade_user_to_city_agent(user_email TEXT)
+RETURNS void AS $$
+BEGIN
+  UPDATE profiles 
+  SET 
+    membership_type = 'city_agent',
+    membership_expires_at = NULL, -- 城市代理永久有效
+    updated_at = NOW()
+  WHERE email = user_email;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 创建普通会员升级函数
+CREATE OR REPLACE FUNCTION upgrade_user_to_basic(user_email TEXT, months INTEGER DEFAULT 1)
+RETURNS void AS $$
+BEGIN
+  UPDATE profiles 
+  SET 
+    membership_type = 'basic',
+    membership_expires_at = NOW() + (months || ' months')::INTERVAL,
+    updated_at = NOW()
+  WHERE email = user_email;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
