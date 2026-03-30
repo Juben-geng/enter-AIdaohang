@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import CategorySectionLocal from '@/components/dashboard/CategorySectionLocal';
 import CategorySection from '@/components/dashboard/CategorySection';
+import SortableCategoryCard from '@/components/dashboard/SortableCategoryCard';
 import AddCategoryDialog from '@/components/dashboard/AddCategoryDialog';
 import AddLinkDialog from '@/components/dashboard/AddLinkDialog';
 import LoginPromptDialog from '@/components/LoginPromptDialog';
@@ -66,6 +67,12 @@ export default function DashboardAnonymous() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  // 拖拽传感器
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor)
+  );
 
   // 根据登录状态选择数据源
   const categories = user ? dbCategories : localStorage.categories;
@@ -157,6 +164,46 @@ export default function DashboardAnonymous() {
     }
     setSelectedCategoryId(categoryId);
     setShowAddLink(true);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = categories.findIndex((cat) => cat.id === active.id);
+    const newIndex = categories.findIndex((cat) => cat.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newCategories = arrayMove(categories, oldIndex, newIndex).map((cat, index) => ({
+      ...cat,
+      sort_order: index,
+    }));
+
+    if (user) {
+      setDbCategories(newCategories);
+      
+      // 批量更新数据库
+      const updates = newCategories.map((cat) => ({
+        id: cat.id,
+        sort_order: cat.sort_order,
+      }));
+
+      for (const update of updates) {
+        await supabase
+          .from('categories')
+          .update({ sort_order: update.sort_order })
+          .eq('id', update.id);
+      }
+
+      toast({
+        title: '排序已保存',
+        description: '分类顺序已更新',
+      });
+    } else {
+      localStorage.updateCategories(newCategories);
+    }
   };
 
   const handleSignOut = async () => {
@@ -326,13 +373,13 @@ export default function DashboardAnonymous() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {categories
-              .filter((cat) =>
-                cat.name.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              .map((category) =>
-                isAnonymous ? (
+          isAnonymous ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {categories
+                .filter((cat) =>
+                  cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((category) => (
                   <CategorySectionLocal
                     key={category.id}
                     category={category}
@@ -341,16 +388,35 @@ export default function DashboardAnonymous() {
                     localStorage={localStorage}
                     onAction={incrementUsage}
                   />
-                ) : (
-                  <CategorySection
-                    key={category.id}
-                    category={category}
-                    onAddLink={handleAddLink}
-                    onRefresh={fetchDbCategories}
-                  />
-                )
-              )}
-          </div>
+                ))}
+            </div>
+          ) : (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={categories.map((cat) => cat.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {categories
+                    .filter((cat) =>
+                      cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .map((category) => (
+                      <SortableCategoryCard
+                        key={category.id}
+                        category={category}
+                        onAddLink={handleAddLink}
+                        onRefresh={fetchDbCategories}
+                      />
+                    ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          )
         )}
       </main>
 

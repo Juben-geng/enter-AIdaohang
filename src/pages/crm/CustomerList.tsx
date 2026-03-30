@@ -197,11 +197,13 @@ export default function CustomerList() {
                     </p>
                   )}
                   <div className="pt-2 flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      查看详情
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      添加行程
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => navigate(`/crm/customers/${customer.id}/trips`)}
+                    >
+                      查看行程
                     </Button>
                   </div>
                 </CardContent>

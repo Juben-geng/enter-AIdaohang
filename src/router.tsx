@@ -11,6 +11,7 @@ import NavigationSquareManagement from "./pages/admin/NavigationSquareManagement
 import TestAuth from "./pages/TestAuth";
 import AITools from "./pages/ai/AITools";
 import CustomerList from "./pages/crm/CustomerList";
+import CustomerTrips from "./pages/crm/CustomerTrips";
 
 export const routers = [
     {
@@ -42,6 +43,11 @@ export const routers = [
       path: "/crm/customers",
       name: 'crm-customers',
       element: <ProtectedRoute><CustomerList /></ProtectedRoute>,
+    },
+    {
+      path: "/crm/customers/:customerId/trips",
+      name: 'customer-trips',
+      element: <ProtectedRoute><CustomerTrips /></ProtectedRoute>,
     },
     {
       path: "/admin",

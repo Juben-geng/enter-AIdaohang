@@ -10,8 +10,23 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import LinkCard from './LinkCard';
+import SortableLinkCard from './SortableLinkCard';
 import ExportButton from '@/components/ExportButton';
 import { useToast } from '@/hooks/use-toast';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface Category {
   id: string;
@@ -43,6 +58,11 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
   const [links, setLinks] = useState<Link[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor)
+  );
 
   useEffect(() => {
     fetchLinks();
@@ -106,6 +126,38 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
     onRefresh();
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = links.findIndex((link) => link.id === active.id);
+    const newIndex = links.findIndex((link) => link.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newLinks = arrayMove(links, oldIndex, newIndex);
+    setLinks(newLinks);
+
+    // 更新数据库中的排序
+    const updates = newLinks.map((link, index) => ({
+      id: link.id,
+      sort_order: index,
+    }));
+
+    for (const update of updates) {
+      await supabase
+        .from('links')
+        .update({ sort_order: update.sort_order })
+        .eq('id', update.id);
+    }
+
+    toast({
+      title: '排序已保存',
+      description: '链接顺序已更新',
+    });
+  };
+
   return (
     <Card className="p-6 space-y-4 card-hover hover:border-primary/50">
       <div className="flex items-center justify-between">
@@ -153,9 +205,20 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
             添加第一个链接
           </Button>
         ) : (
-          links.map((link) => (
-            <LinkCard key={link.id} link={link} onRefresh={fetchLinks} />
-          ))
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={links.map((link) => link.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {links.map((link) => (
+                <SortableLinkCard key={link.id} link={link} />
+              ))}
+            </SortableContext>
+          </DndContext>
         )}
       </div>
     </Card>
