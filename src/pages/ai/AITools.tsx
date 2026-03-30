@@ -807,7 +807,7 @@ export default function AITools() {
                   )}
                 </Button>
 
-                {isGeneratingVideo && cancelledRef.current && (
+                {isGeneratingVideo && !cancelledRef.current && (
                   <Button 
                     onClick={() => { cancelledRef.current = true; }} 
                     variant="destructive"
