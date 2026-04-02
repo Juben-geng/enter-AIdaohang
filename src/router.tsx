@@ -12,6 +12,8 @@ import TestAuth from "./pages/TestAuth";
 import AITools from "./pages/ai/AITools";
 import CustomerList from "./pages/crm/CustomerList";
 import CustomerTrips from "./pages/crm/CustomerTrips";
+import OrderManagement from "./pages/crm/OrderManagement";
+import TeamManagement from "./pages/crm/TeamManagement";
 
 export const routers = [
     {
@@ -48,6 +50,16 @@ export const routers = [
       path: "/crm/customers/:customerId/trips",
       name: 'customer-trips',
       element: <ProtectedRoute><CustomerTrips /></ProtectedRoute>,
+    },
+    {
+      path: "/crm/orders",
+      name: 'crm-orders',
+      element: <ProtectedRoute><OrderManagement /></ProtectedRoute>,
+    },
+    {
+      path: "/crm/team",
+      name: 'crm-team',
+      element: <ProtectedRoute><TeamManagement /></ProtectedRoute>,
     },
     {
       path: "/admin",

@@ -5,7 +5,7 @@ import { useAnonymousUsage } from '@/hooks/useAnonymousUsage';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, LogOut, User, Crown, LogIn, Sparkles, Users } from 'lucide-react';
+import { Plus, Search, LogOut, User, Crown, LogIn, Sparkles, Users, FileText } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -328,6 +328,14 @@ export default function DashboardAnonymous() {
                   <DropdownMenuItem onClick={() => navigate('/crm/customers')}>
                     <Users className="w-4 h-4 mr-2" />
                     客户管理
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/crm/orders')}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    订单管理
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/crm/team')}>
+                    <Users className="w-4 h-4 mr-2" />
+                    团队协作
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/profile')}>
                     <User className="w-4 h-4 mr-2" />
