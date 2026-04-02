@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, MoreVertical, Trash2 } from 'lucide-react';
+import { Plus, MoreVertical, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
-import LinkCard from './LinkCard';
 import SortableLinkCard from './SortableLinkCard';
 import ExportButton from '@/components/ExportButton';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +26,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { cn } from '@/lib/utils';
 
 interface Category {
   id: string;
@@ -54,9 +54,12 @@ interface CategorySectionProps {
   onRefresh: () => void;
 }
 
+const DEFAULT_VISIBLE_COUNT = 6; // 默认显示6个链接
+
 export default function CategorySection({ category, onAddLink, onRefresh }: CategorySectionProps) {
   const [links, setLinks] = useState<Link[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const { toast } = useToast();
 
   const sensors = useSensors(
@@ -158,16 +161,44 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
     });
   };
 
+  // 判断是否需要显示展开按钮
+  const hasMoreLinks = links.length > DEFAULT_VISIBLE_COUNT;
+  // 获取要显示的链接
+  const visibleLinks = expanded ? links : links.slice(0, DEFAULT_VISIBLE_COUNT);
+  const hiddenCount = links.length - DEFAULT_VISIBLE_COUNT;
+
   return (
     <Card className="p-6 space-y-4 card-hover hover:border-primary/50">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {category.icon && <span className="text-2xl">{category.icon}</span>}
-          <h3 className="text-lg font-semibold">{category.name}</h3>
-          <span className="text-xs text-muted-foreground">({links.length})</span>
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {category.icon && (
+            <span className="text-2xl flex-shrink-0">{category.icon}</span>
+          )}
+          <div className="flex items-center gap-2 min-w-0">
+            <h3 className="text-lg font-semibold truncate">{category.name}</h3>
+            <span className="text-xs text-muted-foreground flex-shrink-0">
+              ({links.length})
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {/* 快捷添加按钮 */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onAddLink(category.id)}
+            className="hidden sm:flex h-8"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            添加
+          </Button>
+
+          {/* 导出按钮 */}
           <ExportButton categoryId={category.id} size="sm" />
+
+          {/* 更多操作 */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -175,7 +206,7 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onAddLink(category.id)}>
+              <DropdownMenuItem onClick={() => onAddLink(category.id)} className="sm:hidden">
                 <Plus className="w-4 h-4 mr-2" />
                 添加链接
               </DropdownMenuItem>
@@ -188,37 +219,71 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
         </div>
       </div>
 
+      {/* Links List */}
       <div className="space-y-2">
         {loading ? (
           <div className="space-y-2">
-            {[1, 2].map((i) => (
+            {[1, 2, 3].map((i) => (
               <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
             ))}
           </div>
         ) : links.length === 0 ? (
           <Button
             variant="outline"
-            className="w-full h-16 border-dashed"
+            className="w-full h-16 border-dashed hover:border-primary/50 hover:bg-primary/5"
             onClick={() => onAddLink(category.id)}
           >
             <Plus className="w-4 h-4 mr-2" />
             添加第一个链接
           </Button>
         ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={links.map((link) => link.id)}
-              strategy={verticalListSortingStrategy}
+          <>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              {links.map((link) => (
-                <SortableLinkCard key={link.id} link={link} />
-              ))}
-            </SortableContext>
-          </DndContext>
+              <SortableContext
+                items={visibleLinks.map((link) => link.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className={cn(
+                  "space-y-2 transition-all duration-300",
+                  !expanded && hasMoreLinks && "relative"
+                )}>
+                  {visibleLinks.map((link) => (
+                    <SortableLinkCard key={link.id} link={link} />
+                  ))}
+                  
+                  {/* 渐变遮罩 */}
+                  {!expanded && hasMoreLinks && (
+                    <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                  )}
+                </div>
+              </SortableContext>
+            </DndContext>
+
+            {/* 展开/收起按钮 */}
+            {hasMoreLinks && (
+              <Button
+                variant="outline"
+                className="w-full border-dashed hover:border-primary/50 hover:bg-primary/5"
+                onClick={() => setExpanded(!expanded)}
+              >
+                {expanded ? (
+                  <>
+                    <ChevronUp className="w-4 h-4 mr-2" />
+                    收起链接
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4 mr-2" />
+                    展开全部 ({hiddenCount} 个隐藏)
+                  </>
+                )}
+              </Button>
+            )}
+          </>
         )}
       </div>
     </Card>
