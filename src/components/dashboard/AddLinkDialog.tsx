@@ -41,16 +41,35 @@ export default function AddLinkDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 验证分类ID
     if (!categoryId) {
+      console.error('❌ categoryId is null or undefined');
       toast({
         title: '错误',
-        description: '未选择分类',
+        description: '未选择分类，请刷新页面重试',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // 验证用户登录状态
+    if (!user) {
+      console.error('❌ User not logged in');
+      toast({
+        title: '错误',
+        description: '请先登录',
         variant: 'destructive',
       });
       return;
     }
 
     setLoading(true);
+    console.log('🚀 开始添加链接...');
+    console.log('📋 用户ID:', user.id);
+    console.log('📁 分类ID:', categoryId);
+    console.log('📝 标题:', title);
+    console.log('🔗 URL:', url);
 
     try {
       if (isAnonymous && localStorageHook) {
@@ -66,7 +85,7 @@ export default function AddLinkDialog({
         });
 
         toast({
-          title: '添加成功',
+          title: '✅ 添加成功',
           description: '链接已保存到本地',
         });
 
@@ -78,59 +97,68 @@ export default function AddLinkDialog({
         setLoading(false);
         onOpenChange(false);
         onSuccess();
-      } else if (user) {
+      } else {
         // 使用数据库
-        console.log('Adding link with data:', { 
-          user_id: user.id, 
-          category_id: categoryId,
-          title,
-          url 
-        });
-
-        const { data, error } = await supabase.from('links').insert({
+        console.log('💾 准备插入数据库...');
+        
+        const insertData = {
           user_id: user.id,
           category_id: categoryId,
-          title,
-          url,
-          description: description || null,
+          title: title.trim(),
+          url: url.trim(),
+          description: description?.trim() || null,
           link_type: linkType,
           sort_order: Date.now(),
-        }).select().single();
+        };
+        
+        console.log('📦 插入数据:', insertData);
+
+        const { data, error } = await supabase
+          .from('links')
+          .insert(insertData)
+          .select()
+          .single();
 
         if (error) {
-          console.error('Database error:', error);
-          throw new Error(error.message || '数据库插入失败');
+          console.error('❌ 数据库错误:', error);
+          console.error('错误代码:', error.code);
+          console.error('错误消息:', error.message);
+          console.error('错误详情:', error.details);
+          console.error('错误提示:', error.hint);
+          throw new Error(`数据库错误: ${error.message}`);
         }
 
-        // 确保数据插入成功
-        if (data) {
-          console.log('Link added successfully:', data);
-          toast({
-            title: '添加成功',
-            description: '链接已添加',
-          });
-
-          // 重置表单
-          setTitle('');
-          setUrl('');
-          setDescription('');
-          setLinkType('web');
-          setLoading(false);
-          onOpenChange(false);
-          
-          // 延迟调用onSuccess确保数据库已更新
-          setTimeout(() => {
-            onSuccess();
-          }, 300);
+        if (!data) {
+          console.error('❌ 没有返回数据');
+          throw new Error('插入失败：没有返回数据');
         }
-      } else {
-        throw new Error('用户未登录');
+
+        console.log('✅ 链接添加成功:', data);
+        
+        toast({
+          title: '✅ 添加成功',
+          description: `链接"${title}"已添加`,
+        });
+
+        // 重置表单
+        setTitle('');
+        setUrl('');
+        setDescription('');
+        setLinkType('web');
+        setLoading(false);
+        onOpenChange(false);
+        
+        // 延迟刷新确保数据同步
+        setTimeout(() => {
+          console.log('🔄 触发页面刷新...');
+          onSuccess();
+        }, 500);
       }
     } catch (error) {
-      console.error('Add link error:', error);
+      console.error('💥 捕获异常:', error);
       const message = error instanceof Error ? error.message : '添加失败，请重试';
       toast({
-        title: '添加失败',
+        title: '❌ 添加失败',
         description: message,
         variant: 'destructive',
       });

@@ -1,0 +1,131 @@
+
+-- 1. 为测试账号手动添加预设分类和链接
+DO $$
+DECLARE
+  test_user_id UUID := 'b45a6212-e4c0-4d2b-8459-a39c48470c2d';
+  preset_cat RECORD;
+  new_cat_id UUID;
+BEGIN
+  -- 删除旧的分类（如果有）
+  DELETE FROM categories WHERE user_id = test_user_id;
+  
+  -- 复制预设分类和链接
+  FOR preset_cat IN 
+    SELECT * FROM preset_categories WHERE industry = 'travel' ORDER BY sort_order
+  LOOP
+    -- 复制分类
+    INSERT INTO categories (user_id, name, icon, color, sort_order, is_custom, created_at, updated_at)
+    VALUES (
+      test_user_id,
+      preset_cat.name,
+      preset_cat.icon,
+      preset_cat.color,
+      preset_cat.sort_order,
+      false,
+      NOW(),
+      NOW()
+    )
+    RETURNING id INTO new_cat_id;
+    
+    -- 复制该分类下的链接
+    INSERT INTO links (user_id, category_id, title, url, description, icon, link_type, sort_order, created_at, updated_at)
+    SELECT 
+      test_user_id,
+      new_cat_id,
+      title,
+      url,
+      description,
+      icon,
+      link_type,
+      sort_order,
+      NOW(),
+      NOW()
+    FROM preset_links
+    WHERE category_id = preset_cat.id;
+    
+    RAISE NOTICE '已复制分类: % (ID: %)', preset_cat.name, new_cat_id;
+  END LOOP;
+  
+  RAISE NOTICE '测试账号分类初始化完成！';
+END $$;
+
+-- 2. 重新创建触发器确保新用户自动获得预设分类
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+DECLARE
+  preset_cat RECORD;
+  new_cat_id UUID;
+  ref_code TEXT;
+BEGIN
+  -- 生成邀请码
+  ref_code := substring(md5(random()::text) from 1 for 8);
+  
+  -- 1. 创建用户档案
+  INSERT INTO public.profiles (id, email, referral_code, created_at, updated_at)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    ref_code,
+    NOW(),
+    NOW()
+  );
+
+  -- 2. 为新用户复制预设分类和链接
+  FOR preset_cat IN 
+    SELECT * FROM preset_categories WHERE industry = 'travel' ORDER BY sort_order
+  LOOP
+    -- 复制分类
+    INSERT INTO categories (user_id, name, icon, color, sort_order, is_custom, created_at, updated_at)
+    VALUES (
+      NEW.id,
+      preset_cat.name,
+      preset_cat.icon,
+      preset_cat.color,
+      preset_cat.sort_order,
+      false,
+      NOW(),
+      NOW()
+    )
+    RETURNING id INTO new_cat_id;
+    
+    -- 复制该分类下的链接
+    INSERT INTO links (user_id, category_id, title, url, description, icon, link_type, sort_order, created_at, updated_at)
+    SELECT 
+      NEW.id,
+      new_cat_id,
+      title,
+      url,
+      description,
+      icon,
+      link_type,
+      sort_order,
+      NOW(),
+      NOW()
+    FROM preset_links
+    WHERE category_id = preset_cat.id;
+  END LOOP;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 删除旧触发器（如果存在）
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+
+-- 创建新触发器
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
+
+-- 3. 验证测试账号的分类数量
+DO $$
+DECLARE
+  cat_count INTEGER;
+  link_count INTEGER;
+BEGIN
+  SELECT COUNT(*) INTO cat_count FROM categories WHERE user_id = 'b45a6212-e4c0-4d2b-8459-a39c48470c2d';
+  SELECT COUNT(*) INTO link_count FROM links WHERE user_id = 'b45a6212-e4c0-4d2b-8459-a39c48470c2d';
+  
+  RAISE NOTICE '测试账号统计: % 个分类, % 个链接', cat_count, link_count;
+END $$;
