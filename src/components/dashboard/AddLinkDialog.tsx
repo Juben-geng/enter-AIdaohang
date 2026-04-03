@@ -41,7 +41,14 @@ export default function AddLinkDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!categoryId) return;
+    if (!categoryId) {
+      toast({
+        title: '错误',
+        description: '未选择分类',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setLoading(true);
 
@@ -73,6 +80,13 @@ export default function AddLinkDialog({
         onSuccess();
       } else if (user) {
         // 使用数据库
+        console.log('Adding link with data:', { 
+          user_id: user.id, 
+          category_id: categoryId,
+          title,
+          url 
+        });
+
         const { data, error } = await supabase.from('links').insert({
           user_id: user.id,
           category_id: categoryId,
@@ -84,11 +98,13 @@ export default function AddLinkDialog({
         }).select().single();
 
         if (error) {
-          throw error;
+          console.error('Database error:', error);
+          throw new Error(error.message || '数据库插入失败');
         }
 
         // 确保数据插入成功
         if (data) {
+          console.log('Link added successfully:', data);
           toast({
             title: '添加成功',
             description: '链接已添加',
@@ -105,8 +121,10 @@ export default function AddLinkDialog({
           // 延迟调用onSuccess确保数据库已更新
           setTimeout(() => {
             onSuccess();
-          }, 100);
+          }, 300);
         }
+      } else {
+        throw new Error('用户未登录');
       }
     } catch (error) {
       console.error('Add link error:', error);

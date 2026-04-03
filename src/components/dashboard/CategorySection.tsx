@@ -168,30 +168,32 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
   const hiddenCount = links.length - DEFAULT_VISIBLE_COUNT;
 
   return (
-    <Card className="p-6 space-y-4 card-hover hover:border-primary/50">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+    <Card className="p-4 sm:p-6 space-y-4 card-hover hover:border-primary/50">
+      {/* Header - 优化移动端布局 */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        {/* 标题区域 */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           {category.icon && (
-            <span className="text-2xl flex-shrink-0">{category.icon}</span>
+            <span className="text-xl sm:text-2xl flex-shrink-0">{category.icon}</span>
           )}
-          <div className="flex items-center gap-2 min-w-0">
-            <h3 className="text-lg font-semibold truncate">{category.name}</h3>
-            <span className="text-xs text-muted-foreground flex-shrink-0">
-              ({links.length})
-            </span>
-          </div>
+          <h3 className="text-base sm:text-lg font-semibold truncate">
+            {category.name}
+          </h3>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            ({links.length})
+          </span>
         </div>
 
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {/* 快捷添加按钮 */}
+        {/* 操作按钮区域 */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* 添加按钮 - 移动端也显示 */}
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={() => onAddLink(category.id)}
-            className="hidden sm:flex h-8"
+            className="h-8 text-xs sm:text-sm"
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
             添加
           </Button>
 
@@ -201,15 +203,11 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
           {/* 更多操作 */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="outline" size="icon" className="h-8 w-8">
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onAddLink(category.id)} className="sm:hidden">
-                <Plus className="w-4 h-4 mr-2" />
-                添加链接
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDeleteCategory} className="text-destructive">
                 <Trash2 className="w-4 h-4 mr-2" />
                 删除分类
