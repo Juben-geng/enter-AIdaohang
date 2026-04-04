@@ -53,6 +53,102 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data as Profile;
   };
 
+  // 初始化用户数据（分类和链接）
+  const initializeUserData = async (userId: string, email?: string) => {
+    try {
+      console.log('🔧 [初始化] 开始为用户初始化数据...', userId);
+      
+      // 如果需要，先创建profile
+      if (email) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: userId,
+            email: email,
+            referral_code: Math.random().toString(36).substring(2, 10),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'id' });
+        
+        if (profileError) {
+          console.error('❌ [初始化] Profile创建失败:', profileError);
+        } else {
+          console.log('✅ [初始化] Profile已创建');
+        }
+      }
+      
+      // 获取预设分类
+      const { data: presetCategories } = await supabase
+        .from('preset_categories')
+        .select('*')
+        .eq('industry', 'travel')
+        .order('sort_order');
+      
+      if (!presetCategories || presetCategories.length === 0) {
+        console.error('❌ [初始化] 没有找到预设分类');
+        return;
+      }
+      
+      console.log(`✅ [初始化] 找到${presetCategories.length}个预设分类`);
+      
+      // 复制每个分类
+      for (const presetCat of presetCategories) {
+        // 创建分类
+        const { data: newCategory, error: catError } = await supabase
+          .from('categories')
+          .insert({
+            user_id: userId,
+            name: presetCat.name,
+            icon: presetCat.icon,
+            color: presetCat.color,
+            sort_order: presetCat.sort_order,
+            is_custom: false,
+          })
+          .select()
+          .single();
+        
+        if (catError) {
+          console.error(`❌ [初始化] 分类创建失败 ${presetCat.name}:`, catError);
+          continue;
+        }
+        
+        // 获取该分类的预设链接
+        const { data: presetLinks } = await supabase
+          .from('preset_links')
+          .select('*')
+          .eq('category_id', presetCat.id);
+        
+        if (presetLinks && presetLinks.length > 0) {
+          // 批量插入链接
+          const linksToInsert = presetLinks.map(link => ({
+            user_id: userId,
+            category_id: newCategory.id,
+            title: link.title,
+            url: link.url,
+            description: link.description,
+            icon: link.icon,
+            link_type: link.link_type,
+            sort_order: link.sort_order,
+          }));
+          
+          const { error: linksError } = await supabase
+            .from('links')
+            .insert(linksToInsert);
+          
+          if (linksError) {
+            console.error(`❌ [初始化] 链接插入失败 ${presetCat.name}:`, linksError);
+          } else {
+            console.log(`✅ [初始化] ${presetCat.name}: 已添加${presetLinks.length}个链接`);
+          }
+        }
+      }
+      
+      console.log('🎉 [初始化] 用户数据初始化完成！');
+    } catch (error) {
+      console.error('💥 [初始化] 失败:', error);
+    }
+  };
+
   const refreshProfile = async () => {
     if (!user) return;
     const profileData = await fetchProfile(user.id);
@@ -146,8 +242,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('⚠️ [注册] Profile检查失败:', profileError);
       } else if (profileCheck) {
         console.log('✅ [注册] Profile已创建:', profileCheck);
+        
+        // 检查用户是否有分类，如果没有则调用初始化
+        const { data: categories } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('user_id', data.user.id)
+          .limit(1);
+        
+        if (!categories || categories.length === 0) {
+          console.log('⚠️ [注册] 用户没有分类，调用手动初始化...');
+          await initializeUserData(data.user.id);
+        } else {
+          console.log('✅ [注册] 用户已有分类');
+        }
       } else {
-        console.warn('⚠️ [注册] Profile未找到，但不影响注册');
+        console.warn('⚠️ [注册] Profile未找到，创建Profile并初始化数据...');
+        await initializeUserData(data.user.id, email);
       }
 
       // 异步处理邀请码和数据迁移（不阻塞注册流程）
