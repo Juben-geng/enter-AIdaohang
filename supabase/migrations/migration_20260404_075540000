@@ -1,0 +1,135 @@
+
+-- ============================================
+-- 创建管理员账号完整数据
+-- ============================================
+
+DO $$
+DECLARE
+  admin_user_id UUID := '3f93a5cb-ece5-4875-b13b-6ef97650deed';
+  admin_email TEXT := 'jygxb2464@163.com';
+  preset_cat RECORD;
+  new_cat_id UUID;
+  ref_code TEXT := 'ADMIN001';
+BEGIN
+  -- 1. 创建管理员Profile（最高权限）
+  INSERT INTO public.profiles (
+    id,
+    email,
+    referral_code,
+    membership_type,
+    membership_expires_at,
+    username,
+    created_at,
+    updated_at
+  ) VALUES (
+    admin_user_id,
+    admin_email,
+    ref_code,
+    'national_agent', -- 最高权限级别
+    '2099-12-31 23:59:59+00', -- 永久有效
+    '系统管理员',
+    NOW(),
+    NOW()
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    membership_type = 'national_agent',
+    membership_expires_at = '2099-12-31 23:59:59+00',
+    username = '系统管理员',
+    updated_at = NOW();
+
+  RAISE NOTICE '✅ 管理员Profile已创建/更新';
+
+  -- 2. 删除旧数据（如果有）
+  DELETE FROM links WHERE user_id = admin_user_id;
+  DELETE FROM categories WHERE user_id = admin_user_id;
+
+  RAISE NOTICE '✅ 清理旧数据完成';
+
+  -- 3. 复制预设分类和链接
+  FOR preset_cat IN 
+    SELECT * FROM preset_categories WHERE industry = 'travel' ORDER BY sort_order
+  LOOP
+    -- 复制分类
+    INSERT INTO categories (
+      user_id,
+      name,
+      icon,
+      color,
+      sort_order,
+      is_custom,
+      created_at,
+      updated_at
+    ) VALUES (
+      admin_user_id,
+      preset_cat.name,
+      preset_cat.icon,
+      preset_cat.color,
+      preset_cat.sort_order,
+      false,
+      NOW(),
+      NOW()
+    )
+    RETURNING id INTO new_cat_id;
+    
+    -- 复制该分类下的所有链接
+    INSERT INTO links (
+      user_id,
+      category_id,
+      title,
+      url,
+      description,
+      icon,
+      link_type,
+      sort_order,
+      created_at,
+      updated_at
+    )
+    SELECT 
+      admin_user_id,
+      new_cat_id,
+      title,
+      url,
+      description,
+      icon,
+      link_type,
+      sort_order,
+      NOW(),
+      NOW()
+    FROM preset_links
+    WHERE category_id = preset_cat.id;
+    
+    RAISE NOTICE '✅ 已复制分类: %', preset_cat.name;
+  END LOOP;
+
+  -- 4. 创建测试客户数据
+  INSERT INTO customers (created_by, name, phone, email, wechat, tags, notes)
+  VALUES 
+    (admin_user_id, '张三', '13800138000', 'zhangsan@example.com', 'zhangsan_wx', ARRAY['VIP客户', '回头客'], '重要客户，优先服务'),
+    (admin_user_id, '李四', '13900139000', 'lisi@example.com', 'lisi_wx', ARRAY['新客户'], '第一次咨询旅游产品'),
+    (admin_user_id, '王五', '13700137000', 'wangwu@example.com', 'wangwu_wx', ARRAY['VIP客户', '高消费'], '经常预订豪华旅游套餐')
+  ON CONFLICT DO NOTHING;
+
+  RAISE NOTICE '✅ 测试客户已创建';
+
+  RAISE NOTICE '🎉 管理员账号初始化完成！';
+  RAISE NOTICE '账号信息：';
+  RAISE NOTICE '  邮箱: %', admin_email;
+  RAISE NOTICE '  权限: 国家级代理（最高权限）';
+  RAISE NOTICE '  有效期: 永久';
+  RAISE NOTICE '  邀请码: %', ref_code;
+END $$;
+
+-- 5. 验证结果
+SELECT 
+  p.email,
+  p.username,
+  p.membership_type,
+  p.membership_expires_at,
+  p.referral_code,
+  COUNT(DISTINCT c.id) as category_count,
+  COUNT(l.id) as link_count
+FROM profiles p
+LEFT JOIN categories c ON c.user_id = p.id
+LEFT JOIN links l ON l.user_id = p.id
+WHERE p.email = 'jygxb2464@163.com'
+GROUP BY p.id, p.email, p.username, p.membership_type, p.membership_expires_at, p.referral_code;
