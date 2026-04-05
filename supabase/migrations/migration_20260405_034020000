@@ -1,0 +1,20 @@
+
+-- 升级VIP账号为管理员
+UPDATE profiles 
+SET 
+  membership_type = 'national_agent',
+  membership_expires_at = '2099-12-31 23:59:59+00',
+  username = '系统管理员',
+  referral_code = COALESCE(referral_code, 'ADMIN999'),
+  updated_at = NOW()
+WHERE email = 'jygxb2464@126.com';
+
+-- 验证结果
+SELECT 
+  email,
+  username,
+  membership_type,
+  membership_expires_at,
+  referral_code
+FROM profiles
+WHERE email = 'jygxb2464@126.com';
