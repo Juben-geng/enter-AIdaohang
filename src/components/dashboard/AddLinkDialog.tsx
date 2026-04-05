@@ -125,6 +125,15 @@ export default function AddLinkDialog({
           console.error('错误消息:', error.message);
           console.error('错误详情:', error.details);
           console.error('错误提示:', error.hint);
+          console.error('完整错误对象:', JSON.stringify(error, null, 2));
+          
+          // 显示更详细的错误信息
+          toast({
+            title: '❌ 添加失败',
+            description: `数据库错误: ${error.message} (${error.code})`,
+            variant: 'destructive',
+          });
+          
           throw new Error(`数据库错误: ${error.message}`);
         }
 

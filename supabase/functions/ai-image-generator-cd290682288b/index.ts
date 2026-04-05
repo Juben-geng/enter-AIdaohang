@@ -13,6 +13,26 @@ interface ImageRequest {
   format?: string;
 }
 
+interface ImageMetaData {
+  url?: string;
+  [key: string]: unknown;
+}
+
+interface ImageResult {
+  url: string;
+  meta_data?: ImageMetaData;
+}
+
+interface Resource {
+  url?: string;
+  meta_data?: ImageMetaData;
+}
+
+interface ParsedPayload {
+  resources?: Resource[];
+  [key: string]: unknown;
+}
+
 function parseErrorCode(type: string, message: string): string {
   if (type !== "api_error") return type;
   
@@ -33,19 +53,19 @@ function errorResponse(status: number, message: string, code: string) {
   );
 }
 
-function successResponse(images: Array<{ url: string; meta_data?: Record<string, any> }>, taskId: string) {
+function successResponse(images: ImageResult[], taskId: string) {
   return new Response(
     JSON.stringify({ success: true, images, task_id: taskId }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );
 }
 
-function parseRespPayload(respPayload: string): Array<{ url: string; meta_data?: Record<string, any> }> {
+function parseRespPayload(respPayload: string): ImageResult[] {
   try {
-    const payload = JSON.parse(respPayload);
+    const payload = JSON.parse(respPayload) as ParsedPayload;
     const resources = payload.resources || [];
-    return resources.map((r: any) => ({
-      url: r.url || r.meta_data?.url,
+    return resources.map((r: Resource) => ({
+      url: r.url || r.meta_data?.url || '',
       meta_data: r.meta_data
     }));
   } catch (e) {
@@ -109,7 +129,7 @@ serve(async (req) => {
       return errorResponse(500, data.error || "Generation failed", "api_error");
     }
 
-    let images: Array<{ url: string; meta_data?: Record<string, any> }> = [];
+    let images: ImageResult[] = [];
     
     if (data.resp_payload) {
       images = parseRespPayload(data.resp_payload);
@@ -119,6 +139,7 @@ serve(async (req) => {
 
     return successResponse(images, data.task_id);
   } catch (error) {
-    return errorResponse(500, error.message || "Internal error", "internal_error");
+    const errorMessage = error instanceof Error ? error.message : "Internal error";
+    return errorResponse(500, errorMessage, "internal_error");
   }
 });

@@ -5,7 +5,7 @@ import { useAnonymousUsage } from '@/hooks/useAnonymousUsage';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, LogOut, User, Crown, LogIn, Sparkles, Users, FileText } from 'lucide-react';
+import { Plus, Search, LogOut, User, Crown, LogIn, Sparkles, Users, FileText, Shield } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -341,6 +341,15 @@ export default function DashboardAnonymous() {
                     <User className="w-4 h-4 mr-2" />
                     个人资料
                   </DropdownMenuItem>
+                  {profile?.membership_type === 'national_agent' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/admin-panel')} className="bg-purple-50 dark:bg-purple-950">
+                        <Shield className="w-4 h-4 mr-2" />
+                        <span className="font-semibold text-purple-600 dark:text-purple-400">后台管理</span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                     <LogOut className="w-4 h-4 mr-2" />

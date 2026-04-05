@@ -1,0 +1,113 @@
+
+-- 确保两个管理员账号数据完整性检查和修复
+DO $$
+DECLARE
+  admin1_id UUID;
+  admin2_id UUID;
+  admin1_email TEXT := 'jygxb2464@126.com';
+  admin2_email TEXT := 'jygxb2464@163.com';
+BEGIN
+  -- 获取管理员ID
+  SELECT id INTO admin1_id FROM profiles WHERE email = admin1_email;
+  SELECT id INTO admin2_id FROM profiles WHERE email = admin2_email;
+  
+  RAISE NOTICE '管理员1: % (ID: %)', admin1_email, admin1_id;
+  RAISE NOTICE '管理员2: % (ID: %)', admin2_email, admin2_id;
+  
+  -- 确保两个账号都是最高管理员权限
+  UPDATE profiles 
+  SET 
+    membership_type = 'national_agent',
+    membership_expires_at = '2099-12-31 23:59:59+00',
+    username = COALESCE(username, '系统管理员'),
+    updated_at = NOW()
+  WHERE email IN (admin1_email, admin2_email);
+  
+  -- 确保管理员1有完整数据
+  IF admin1_id IS NOT NULL THEN
+    -- 检查分类数量
+    IF (SELECT COUNT(*) FROM categories WHERE user_id = admin1_id) < 8 THEN
+      RAISE NOTICE '管理员1缺少分类，开始初始化...';
+      
+      -- 删除现有数据
+      DELETE FROM links WHERE user_id = admin1_id;
+      DELETE FROM categories WHERE user_id = admin1_id;
+      
+      -- 复制预设数据
+      INSERT INTO categories (user_id, name, icon, color, sort_order, is_custom)
+      SELECT admin1_id, name, icon, color, sort_order, false
+      FROM preset_categories 
+      WHERE industry = 'travel'
+      ORDER BY sort_order;
+      
+      -- 复制链接
+      INSERT INTO links (user_id, category_id, title, url, description, icon, link_type, sort_order)
+      SELECT 
+        admin1_id,
+        c.id,
+        pl.title,
+        pl.url,
+        pl.description,
+        pl.icon,
+        pl.link_type,
+        pl.sort_order
+      FROM preset_links pl
+      JOIN preset_categories pc ON pc.id = pl.category_id
+      JOIN categories c ON c.name = pc.name AND c.user_id = admin1_id
+      WHERE pc.industry = 'travel';
+      
+      RAISE NOTICE '管理员1数据初始化完成';
+    END IF;
+  END IF;
+  
+  -- 确保管理员2有完整数据
+  IF admin2_id IS NOT NULL THEN
+    -- 检查分类数量
+    IF (SELECT COUNT(*) FROM categories WHERE user_id = admin2_id) < 8 THEN
+      RAISE NOTICE '管理员2缺少分类，开始初始化...';
+      
+      -- 删除现有数据
+      DELETE FROM links WHERE user_id = admin2_id;
+      DELETE FROM categories WHERE user_id = admin2_id;
+      
+      -- 复制预设数据
+      INSERT INTO categories (user_id, name, icon, color, sort_order, is_custom)
+      SELECT admin2_id, name, icon, color, sort_order, false
+      FROM preset_categories 
+      WHERE industry = 'travel'
+      ORDER BY sort_order;
+      
+      -- 复制链接
+      INSERT INTO links (user_id, category_id, title, url, description, icon, link_type, sort_order)
+      SELECT 
+        admin2_id,
+        c.id,
+        pl.title,
+        pl.url,
+        pl.description,
+        pl.icon,
+        pl.link_type,
+        pl.sort_order
+      FROM preset_links pl
+      JOIN preset_categories pc ON pc.id = pl.category_id
+      JOIN categories c ON c.name = pc.name AND c.user_id = admin2_id
+      WHERE pc.industry = 'travel';
+      
+      RAISE NOTICE '管理员2数据初始化完成';
+    END IF;
+  END IF;
+  
+  RAISE NOTICE '✅ 所有管理员账号检查完成';
+END $$;
+
+-- 验证两个管理员账号状态
+SELECT 
+  p.email as "📧 邮箱",
+  p.username as "👤 用户名",
+  p.membership_type as "⭐ 权限",
+  TO_CHAR(p.membership_expires_at, 'YYYY-MM-DD') as "📅 有效期",
+  (SELECT COUNT(*) FROM categories WHERE user_id = p.id) as "📁 分类数",
+  (SELECT COUNT(*) FROM links WHERE user_id = p.id) as "🔗 链接数"
+FROM profiles p
+WHERE p.email IN ('jygxb2464@126.com', 'jygxb2464@163.com')
+ORDER BY p.email;

@@ -8,6 +8,7 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import SystemConfig from "./pages/admin/SystemConfig";
 import NavigationSquareManagement from "./pages/admin/NavigationSquareManagement";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import TestAuth from "./pages/TestAuth";
 import AITools from "./pages/ai/AITools";
 import CustomerList from "./pages/crm/CustomerList";
@@ -60,6 +61,11 @@ export const routers = [
       path: "/crm/team",
       name: 'crm-team',
       element: <ProtectedRoute><TeamManagement /></ProtectedRoute>,
+    },
+    {
+      path: "/admin-panel",
+      name: 'admin-panel',
+      element: <ProtectedRoute><AdminDashboard /></ProtectedRoute>,
     },
     {
       path: "/admin",

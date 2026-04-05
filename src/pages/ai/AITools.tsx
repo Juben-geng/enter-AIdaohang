@@ -20,6 +20,13 @@ export default function AITools() {
 
   const canUseAI = profile && ['basic', 'vip', 'city_agent', 'national_agent'].includes(profile.membership_type);
 
+  console.log('🔍 [AI助手] 权限检查:', {
+    hasProfile: !!profile,
+    membershipType: profile?.membership_type,
+    canUseAI,
+    email: profile?.email
+  });
+
   // 行程规划
   const [destination, setDestination] = useState('');
   const [days, setDays] = useState('');
