@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, MoreVertical, Trash2, Eye } from 'lucide-react';
+import { ExternalLink, MoreVertical, Trash2, Eye, Pencil } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import EditLinkDialog from './EditLinkDialog';
 
 interface Link {
   id: string;
@@ -17,6 +19,7 @@ interface Link {
   description: string | null;
   icon: string | null;
   click_count: number;
+  link_type: string;
 }
 
 interface LinkCardProps {
@@ -26,6 +29,7 @@ interface LinkCardProps {
 
 export default function LinkCard({ link, onRefresh }: LinkCardProps) {
   const { toast } = useToast();
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const handleClick = async () => {
     // 增加点击计数
@@ -102,6 +106,10 @@ export default function LinkCard({ link, onRefresh }: LinkCardProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                <Pencil className="w-4 h-4 mr-2" />
+                编辑链接
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDelete} className="text-destructive">
                 <Trash2 className="w-4 h-4 mr-2" />
                 删除链接
@@ -110,6 +118,14 @@ export default function LinkCard({ link, onRefresh }: LinkCardProps) {
           </DropdownMenu>
         </div>
       </div>
+      
+      {/* 编辑链接对话框 */}
+      <EditLinkDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        link={link}
+        onSuccess={onRefresh}
+      />
     </Card>
   );
 }

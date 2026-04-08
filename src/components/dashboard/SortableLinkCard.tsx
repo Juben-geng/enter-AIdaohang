@@ -17,9 +17,10 @@ interface Link {
 
 interface SortableLinkCardProps {
   link: Link;
+  onRefresh: () => void;
 }
 
-export default function SortableLinkCard({ link }: SortableLinkCardProps) {
+export default function SortableLinkCard({ link, onRefresh }: SortableLinkCardProps) {
   const {
     attributes,
     listeners,
@@ -48,7 +49,7 @@ export default function SortableLinkCard({ link }: SortableLinkCardProps) {
         </div>
       </div>
 
-      <LinkCard link={link} />
+      <LinkCard link={link} onRefresh={onRefresh} />
     </div>
   );
 }

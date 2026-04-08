@@ -250,7 +250,7 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
                   !expanded && hasMoreLinks && "relative"
                 )}>
                   {visibleLinks.map((link) => (
-                    <SortableLinkCard key={link.id} link={link} />
+                    <SortableLinkCard key={link.id} link={link} onRefresh={fetchLinks} />
                   ))}
                   
                   {/* 渐变遮罩 */}
