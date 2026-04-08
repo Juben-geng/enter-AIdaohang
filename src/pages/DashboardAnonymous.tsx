@@ -68,12 +68,6 @@ export default function DashboardAnonymous() {
   const [loading, setLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  // 拖拽传感器
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor)
-  );
-
   // 根据登录状态选择数据源
   const categories = user ? dbCategories : localStorage.categories;
   const isAnonymous = !user;
