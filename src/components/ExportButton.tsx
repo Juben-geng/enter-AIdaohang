@@ -118,7 +118,7 @@ export default function ExportButton({ categoryId, variant = 'outline', size = '
       ) : (
         <>
           <Download className="w-4 h-4 mr-2" />
-          {categoryId ? '导出当前链接' : '导出所有链接'}
+          {categoryId ? '导出链接' : '导出所有'}
         </>
       )}
     </Button>
