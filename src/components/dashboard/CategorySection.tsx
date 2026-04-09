@@ -186,17 +186,6 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
 
         {/* 操作按钮区域 */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* 添加按钮 - 移动端也显示 */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onAddLink(category.id)}
-            className="h-8 text-xs sm:text-sm"
-          >
-            <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-            添加
-          </Button>
-
           {/* 导出按钮 */}
           <ExportButton categoryId={category.id} size="sm" />
 
@@ -208,6 +197,10 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onAddLink(category.id)}>
+                <Plus className="w-4 h-4 mr-2" />
+                添加链接
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDeleteCategory} className="text-destructive">
                 <Trash2 className="w-4 h-4 mr-2" />
                 删除分类
