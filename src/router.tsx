@@ -3,6 +3,7 @@ import DashboardAnonymous from "./pages/DashboardAnonymous";
 import Auth from "./pages/Auth";
 import MemberCenter from "./pages/MemberCenter";
 import NotFound from "./pages/NotFound";
+import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -31,6 +32,11 @@ export const routers = [
       path: "/member",
       name: 'member',
       element: <ProtectedRoute><MemberCenter /></ProtectedRoute>,
+    },
+    {
+      path: "/profile",
+      name: 'profile',
+      element: <ProtectedRoute><Profile /></ProtectedRoute>,
     },
     {
       path: "/test-auth",
