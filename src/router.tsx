@@ -4,6 +4,9 @@ import Auth from "./pages/Auth";
 import MemberCenter from "./pages/MemberCenter";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
+import SearchLinks from "./pages/SearchLinks";
+import OperationHistory from "./pages/OperationHistory";
+import NavigationSquare from "./pages/NavigationSquare";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -37,6 +40,21 @@ export const routers = [
       path: "/profile",
       name: 'profile',
       element: <ProtectedRoute><Profile /></ProtectedRoute>,
+    },
+    {
+      path: "/search",
+      name: 'search',
+      element: <ProtectedRoute><SearchLinks /></ProtectedRoute>,
+    },
+    {
+      path: "/history",
+      name: 'history',
+      element: <ProtectedRoute><OperationHistory /></ProtectedRoute>,
+    },
+    {
+      path: "/navigation-square",
+      name: 'navigation-square',
+      element: <NavigationSquare />,
     },
     {
       path: "/test-auth",
