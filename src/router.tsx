@@ -7,6 +7,8 @@ import Profile from "./pages/Profile";
 import SearchLinks from "./pages/SearchLinks";
 import OperationHistory from "./pages/OperationHistory";
 import NavigationSquare from "./pages/NavigationSquare";
+import MyNavigationSubmissions from "./pages/MyNavigationSubmissions";
+import EditCategory from "./pages/EditCategory";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -55,6 +57,16 @@ export const routers = [
       path: "/navigation-square",
       name: 'navigation-square',
       element: <NavigationSquare />,
+    },
+    {
+      path: "/my-submissions",
+      name: 'my-submissions',
+      element: <ProtectedRoute><MyNavigationSubmissions /></ProtectedRoute>,
+    },
+    {
+      path: "/edit-categories",
+      name: 'edit-categories',
+      element: <ProtectedRoute><EditCategory /></ProtectedRoute>,
     },
     {
       path: "/test-auth",

@@ -203,13 +203,19 @@ export default function NavigationSquare() {
                     发现和分享优质旅游工具，让旅行更轻松
                   </CardDescription>
                 </div>
-                <Dialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="secondary" size="lg">
-                      <Plus className="w-4 h-4 mr-2" />
-                      投放链接
+                <div className="flex gap-2">
+                  {user && (
+                    <Button variant="secondary" onClick={() => navigate('/my-submissions')}>
+                      我的投放
                     </Button>
-                  </DialogTrigger>
+                  )}
+                  <Dialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="secondary" size="lg">
+                        <Plus className="w-4 h-4 mr-2" />
+                        投放链接
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent className="max-w-md">
                     <DialogHeader>
                       <DialogTitle>投放链接到导航广场</DialogTitle>
@@ -285,6 +291,7 @@ export default function NavigationSquare() {
                     </form>
                   </DialogContent>
                 </Dialog>
+                </div>
               </div>
             </CardHeader>
           </Card>
