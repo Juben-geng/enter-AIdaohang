@@ -141,6 +141,9 @@ export default function NavigationSquare() {
 
     setSubmitting(true);
     try {
+      // 管理员发布的内容自动通过审核
+      const isAdmin = profile?.membership_type === 'national_agent';
+      
       const { error } = await supabase
         .from('navigation_square')
         .insert({
@@ -149,19 +152,24 @@ export default function NavigationSquare() {
           url: formData.url.trim(),
           description: formData.description.trim() || null,
           category: formData.category || null,
-          is_approved: false,
+          is_approved: isAdmin, // 管理员自动通过
           view_count: 0,
         });
 
       if (error) throw error;
 
       toast({
-        title: '✅ 提交成功',
-        description: '您的链接已提交，等待管理员审核',
+        title: isAdmin ? '✅ 发布成功' : '✅ 提交成功',
+        description: isAdmin 
+          ? '您的链接已发布到导航广场' 
+          : '您的链接已提交，等待管理员审核',
       });
 
       setFormData({ title: '', url: '', description: '', category: '' });
       setSubmitDialogOpen(false);
+      
+      // 刷新列表
+      fetchItems();
     } catch (error) {
       console.error('Submit error:', error);
       toast({

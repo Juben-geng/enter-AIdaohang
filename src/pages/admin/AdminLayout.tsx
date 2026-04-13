@@ -74,15 +74,30 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 检查是否是超级管理员
-  const isAdmin = profile?.email === 'admin@example.com' || profile?.email === '18103072478@example.com';
+  // 检查是否是管理员（national_agent）
+  const isAdmin = profile?.membership_type === 'national_agent';
+
+  if (!profile) {
+    // 等待profile加载
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">加载中...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">访问受限</h1>
-          <p className="text-muted-foreground mb-6">您没有权限访问管理后台</p>
+          <p className="text-muted-foreground mb-6">
+            您没有权限访问管理后台<br/>
+            当前会员类型: {profile.membership_type || '未设置'}<br/>
+            需要: national_agent (全国代理)
+          </p>
           <Button onClick={() => navigate('/')}>返回首页</Button>
         </div>
       </div>
