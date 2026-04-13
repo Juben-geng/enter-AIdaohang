@@ -360,6 +360,10 @@ export default function DashboardAnonymous() {
                         <Shield className="w-4 h-4 mr-2" />
                         <span className="font-semibold text-purple-600 dark:text-purple-400">后台管理</span>
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/admin/navigation-square')} className="bg-blue-50 dark:bg-blue-950">
+                        <Globe className="w-4 h-4 mr-2" />
+                        <span className="font-semibold text-blue-600 dark:text-blue-400">审核导航广场</span>
+                      </DropdownMenuItem>
                     </>
                   )}
                   <DropdownMenuSeparator />

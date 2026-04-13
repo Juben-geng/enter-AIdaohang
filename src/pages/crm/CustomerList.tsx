@@ -30,24 +30,31 @@ export default function CustomerList() {
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
 
-  // 检查权限
-  const canAccessCRM = profile && ['basic', 'vip', 'city_agent', 'national_agent'].includes(profile.membership_type);
+  // 检查权限 - 修复：确保profile完全加载后再检查
+  const canAccessCRM = profile && profile.membership_type && 
+    ['basic', 'vip', 'city_agent', 'national_agent'].includes(profile.membership_type);
 
   useEffect(() => {
+    // 等待profile加载
+    if (!profile) {
+      return;
+    }
+
+    // profile加载完成后检查权限
     if (!canAccessCRM) {
       toast({
         title: '权限不足',
-        description: '需要普通会员及以上才能使用客户管理功能',
+        description: `当前会员类型: ${profile.membership_type || '未设置'}。需要普通会员及以上才能使用客户管理功能。`,
         variant: 'destructive',
       });
       navigate('/member');
       return;
     }
 
-    if (profile?.id) {
+    if (profile.id) {
       fetchCustomers();
     }
-  }, [canAccessCRM, profile?.id]);
+  }, [canAccessCRM, profile]);
 
   const fetchCustomers = async () => {
     try {
