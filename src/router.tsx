@@ -15,6 +15,11 @@ import Dashboard from "./pages/admin/Dashboard";
 import SystemConfig from "./pages/admin/SystemConfig";
 import NavigationSquareManagement from "./pages/admin/NavigationSquareManagement";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserManagement from "./pages/admin/UserManagement";
+import ContentManagement from "./pages/admin/ContentManagement";
+import FriendLinks from "./pages/admin/FriendLinks";
+import PaymentManagement from "./pages/admin/PaymentManagement";
+import Analytics from "./pages/admin/Analytics";
 import TestAuth from "./pages/TestAuth";
 import AITools from "./pages/ai/AITools";
 import CustomerList from "./pages/crm/CustomerList";
@@ -119,6 +124,26 @@ export const routers = [
         {
           path: "navigation-square",
           element: <NavigationSquareManagement />,
+        },
+        {
+          path: "users",
+          element: <UserManagement />,
+        },
+        {
+          path: "content",
+          element: <ContentManagement />,
+        },
+        {
+          path: "links",
+          element: <FriendLinks />,
+        },
+        {
+          path: "payments",
+          element: <PaymentManagement />,
+        },
+        {
+          path: "analytics",
+          element: <Analytics />,
         },
       ],
     },

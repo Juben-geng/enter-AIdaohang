@@ -114,23 +114,23 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary-light/10 to-secondary/10 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-secondary/5 p-4">
       <div className="w-full max-w-md space-y-8">
-        <div className="text-center space-y-2 animate-fade-in">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="p-3 bg-gradient-brand rounded-xl shadow-lg">
-              <Plane className="w-8 h-8 text-white" />
+        <div className="text-center space-y-3 animate-fade-in">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="p-4 bg-gradient-brand rounded-2xl shadow-elegant">
+              <Plane className="w-10 h-10 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold gradient-text">旅游AI工具导航</h1>
-          <p className="text-muted-foreground text-lg">AI赋能，智慧旅游</p>
-          <p className="text-muted-foreground">让您的导航更智能，让您的分享更便捷</p>
+          <h1 className="text-5xl font-bold gradient-text tracking-tight">旅游AI工具导航</h1>
+          <p className="text-muted-foreground text-xl font-medium">AI赋能，智慧旅游</p>
+          <p className="text-muted-foreground/80">让您的导航更智能，让您的分享更便捷</p>
         </div>
 
-        <Card className="animate-fade-in border-2">
-          <CardHeader>
-            <CardTitle>欢迎使用</CardTitle>
-            <CardDescription>登录或注册开始管理您的导航</CardDescription>
+        <Card className="animate-fade-in border-2 shadow-lg">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl">欢迎使用</CardTitle>
+            <CardDescription className="text-base">登录或注册开始管理您的专属导航</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
