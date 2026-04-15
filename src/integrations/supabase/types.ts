@@ -154,6 +154,60 @@ export type Database = {
         }
         Relationships: []
       }
+      articles: {
+        Row: {
+          category: string
+          content: string
+          cover_image: string | null
+          created_at: string | null
+          id: string
+          is_featured: boolean | null
+          published_at: string | null
+          slug: string
+          status: string
+          summary: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          user_id: string | null
+          view_count: number | null
+        }
+        Insert: {
+          category: string
+          content: string
+          cover_image?: string | null
+          created_at?: string | null
+          id?: string
+          is_featured?: boolean | null
+          published_at?: string | null
+          slug: string
+          status?: string
+          summary?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          user_id?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          cover_image?: string | null
+          created_at?: string | null
+          id?: string
+          is_featured?: boolean | null
+          published_at?: string | null
+          slug?: string
+          status?: string
+          summary?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color: string | null
@@ -362,30 +416,57 @@ export type Database = {
       }
       friend_links: {
         Row: {
+          admin_note: string | null
+          category: string | null
+          click_count: number | null
+          contact_email: string | null
+          contact_name: string | null
           created_at: string | null
+          description: string | null
+          display_order: number | null
           id: string
-          is_active: boolean | null
+          is_featured: boolean | null
           logo_url: string | null
           name: string
-          sort_order: number | null
+          status: string
+          submitter_id: string | null
+          updated_at: string | null
           url: string
         }
         Insert: {
+          admin_note?: string | null
+          category?: string | null
+          click_count?: number | null
+          contact_email?: string | null
+          contact_name?: string | null
           created_at?: string | null
+          description?: string | null
+          display_order?: number | null
           id?: string
-          is_active?: boolean | null
+          is_featured?: boolean | null
           logo_url?: string | null
           name: string
-          sort_order?: number | null
+          status?: string
+          submitter_id?: string | null
+          updated_at?: string | null
           url: string
         }
         Update: {
+          admin_note?: string | null
+          category?: string | null
+          click_count?: number | null
+          contact_email?: string | null
+          contact_name?: string | null
           created_at?: string | null
+          description?: string | null
+          display_order?: number | null
           id?: string
-          is_active?: boolean | null
+          is_featured?: boolean | null
           logo_url?: string | null
           name?: string
-          sort_order?: number | null
+          status?: string
+          submitter_id?: string | null
+          updated_at?: string | null
           url?: string
         }
         Relationships: []
