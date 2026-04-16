@@ -195,10 +195,7 @@ export default function MemberCenter() {
                     ) : (
                       <Button
                         className={`w-full ${tier.popular ? 'bg-gradient-brand' : ''}`}
-                        onClick={() => {
-                          // TODO: 实现支付逻辑
-                          alert('支付功能即将上线');
-                        }}
+                        onClick={() => navigate('/membership-plans')}
                       >
                         立即升级
                       </Button>

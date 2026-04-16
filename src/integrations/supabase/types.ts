@@ -534,6 +534,51 @@ export type Database = {
           },
         ]
       }
+      membership_plans: {
+        Row: {
+          ai_quota: number | null
+          created_at: string | null
+          discount_rate: number | null
+          display_order: number | null
+          duration_months: number
+          features: string[] | null
+          id: string
+          is_active: boolean | null
+          membership_type: string
+          name: string
+          price: number
+          updated_at: string | null
+        }
+        Insert: {
+          ai_quota?: number | null
+          created_at?: string | null
+          discount_rate?: number | null
+          display_order?: number | null
+          duration_months: number
+          features?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          membership_type: string
+          name: string
+          price: number
+          updated_at?: string | null
+        }
+        Update: {
+          ai_quota?: number | null
+          created_at?: string | null
+          discount_rate?: number | null
+          display_order?: number | null
+          duration_months?: number
+          features?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          membership_type?: string
+          name?: string
+          price?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       navigation_square: {
         Row: {
           category: string | null
@@ -734,6 +779,53 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          error_message: string | null
+          id: string
+          order_id: string | null
+          payment_method: string
+          raw_response: Json | null
+          status: string
+          transaction_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          order_id?: string | null
+          payment_method: string
+          raw_response?: Json | null
+          status?: string
+          transaction_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          order_id?: string | null
+          payment_method?: string
+          raw_response?: Json | null
+          status?: string
+          transaction_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "payment_orders"
             referencedColumns: ["id"]
           },
         ]
@@ -1299,7 +1391,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      content_stats: {
+        Row: {
+          content_type: string | null
+          published_count: number | null
+          total_count: number | null
+          total_views: number | null
+        }
+        Relationships: []
+      }
+      revenue_stats: {
+        Row: {
+          alipay_count: number | null
+          date: string | null
+          order_count: number | null
+          total_revenue: number | null
+          wechat_count: number | null
+        }
+        Relationships: []
+      }
+      user_growth_stats: {
+        Row: {
+          date: string | null
+          new_users: number | null
+          paid_users: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       generate_referral_code: { Args: never; Returns: string }

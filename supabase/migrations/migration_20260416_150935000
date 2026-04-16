@@ -1,0 +1,148 @@
+
+-- ==========================================
+-- 会员套餐配置表
+-- ==========================================
+CREATE TABLE IF NOT EXISTS membership_plans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  membership_type TEXT NOT NULL UNIQUE, -- basic, vip, city_agent, national_agent
+  price NUMERIC NOT NULL,
+  duration_months INTEGER NOT NULL,
+  features TEXT[], -- 功能列表
+  ai_quota INTEGER, -- AI调用额度（-1表示无限）
+  discount_rate NUMERIC DEFAULT 0, -- 折扣率（0-1）
+  is_active BOOLEAN DEFAULT true,
+  display_order INTEGER DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 插入默认套餐
+INSERT INTO membership_plans (name, membership_type, price, duration_months, features, ai_quota, display_order) VALUES
+('普通会员-月付', 'basic', 29, 1, ARRAY['移除广告', 'AI调用100次/月', '客户管理', '数据导出'], 100, 1),
+('普通会员-年付', 'basic', 290, 12, ARRAY['移除广告', 'AI调用100次/月', '客户管理', '数据导出', '年付优惠'], 100, 2),
+('VIP会员-月付', 'vip', 99, 1, ARRAY['所有基础功能', '无限AI调用', '优先支持', '高级统计'], -1, 3),
+('VIP会员-年付', 'vip', 990, 12, ARRAY['所有基础功能', '无限AI调用', '优先支持', '高级统计', '年付优惠'], -1, 4),
+('城市代理-年付', 'city_agent', 999, 12, ARRAY['VIP全部功能', '分销权限', '佣金分成', '自定义白标'], -1, 5),
+('全国代理-年付', 'national_agent', 9999, 12, ARRAY['城市代理全部功能', '最高分成比例', '专属客服', '定制开发'], -1, 6)
+ON CONFLICT (membership_type) DO NOTHING;
+
+CREATE INDEX IF NOT EXISTS idx_membership_plans_type ON membership_plans(membership_type);
+CREATE INDEX IF NOT EXISTS idx_membership_plans_active ON membership_plans(is_active);
+
+-- RLS策略
+ALTER TABLE membership_plans ENABLE ROW LEVEL SECURITY;
+
+-- 所有人可以查看活跃的套餐
+CREATE POLICY "Anyone can view active plans"
+  ON membership_plans FOR SELECT
+  USING (is_active = true);
+
+-- 管理员可以管理套餐
+CREATE POLICY "Admins can manage plans"
+  ON membership_plans FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.membership_type = 'national_agent'
+    )
+  );
+
+-- ==========================================
+-- 支付交易记录表
+-- ==========================================
+CREATE TABLE IF NOT EXISTS payment_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID REFERENCES payment_orders(id) ON DELETE CASCADE,
+  transaction_id TEXT UNIQUE NOT NULL, -- 支付平台交易号
+  payment_method TEXT NOT NULL, -- alipay, wechat
+  amount NUMERIC NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending', -- pending, success, failed
+  raw_response JSONB, -- 支付平台原始响应
+  error_message TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_payment_transactions_order ON payment_transactions(order_id);
+CREATE INDEX IF NOT EXISTS idx_payment_transactions_id ON payment_transactions(transaction_id);
+CREATE INDEX IF NOT EXISTS idx_payment_transactions_status ON payment_transactions(status);
+
+ALTER TABLE payment_transactions ENABLE ROW LEVEL SECURITY;
+
+-- 用户可以查看自己的交易记录
+CREATE POLICY "Users can view own transactions"
+  ON payment_transactions FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM payment_orders
+      WHERE payment_orders.id = payment_transactions.order_id
+      AND payment_orders.user_id = auth.uid()
+    )
+  );
+
+-- 管理员可以查看所有交易记录
+CREATE POLICY "Admins can view all transactions"
+  ON payment_transactions FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.membership_type = 'national_agent'
+    )
+  );
+
+-- ==========================================
+-- 统计数据视图
+-- ==========================================
+
+-- 用户增长统计视图
+CREATE OR REPLACE VIEW user_growth_stats AS
+SELECT 
+  DATE(created_at) as date,
+  COUNT(*) as new_users,
+  COUNT(*) FILTER (WHERE membership_type != 'free') as paid_users
+FROM profiles
+GROUP BY DATE(created_at)
+ORDER BY date DESC;
+
+-- 收益统计视图
+CREATE OR REPLACE VIEW revenue_stats AS
+SELECT 
+  DATE(paid_at) as date,
+  COUNT(*) as order_count,
+  SUM(amount) as total_revenue,
+  COUNT(*) FILTER (WHERE payment_method = 'alipay') as alipay_count,
+  COUNT(*) FILTER (WHERE payment_method = 'wechat') as wechat_count
+FROM payment_orders
+WHERE payment_status = 'paid'
+GROUP BY DATE(paid_at)
+ORDER BY date DESC;
+
+-- 内容统计视图
+CREATE OR REPLACE VIEW content_stats AS
+SELECT 
+  'articles' as content_type,
+  COUNT(*) as total_count,
+  COUNT(*) FILTER (WHERE status = 'published') as published_count,
+  SUM(view_count) as total_views
+FROM articles
+UNION ALL
+SELECT 
+  'friend_links' as content_type,
+  COUNT(*) as total_count,
+  COUNT(*) FILTER (WHERE status = 'approved') as published_count,
+  SUM(click_count) as total_views
+FROM friend_links
+UNION ALL
+SELECT 
+  'navigation_square' as content_type,
+  COUNT(*) as total_count,
+  COUNT(*) FILTER (WHERE is_approved = true) as published_count,
+  SUM(view_count) as total_views
+FROM navigation_square;
+
+-- 添加注释
+COMMENT ON TABLE membership_plans IS '会员套餐配置表';
+COMMENT ON TABLE payment_transactions IS '支付交易记录表';

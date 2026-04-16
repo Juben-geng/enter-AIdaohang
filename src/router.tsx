@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import DashboardAnonymous from "./pages/DashboardAnonymous";
 import Auth from "./pages/Auth";
 import MemberCenter from "./pages/MemberCenter";
+import MembershipPlans from "./pages/MembershipPlans";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import SearchLinks from "./pages/SearchLinks";
@@ -42,6 +43,11 @@ export const routers = [
       path: "/member",
       name: 'member',
       element: <ProtectedRoute><MemberCenter /></ProtectedRoute>,
+    },
+    {
+      path: "/membership-plans",
+      name: 'membership-plans',
+      element: <MembershipPlans />,
     },
     {
       path: "/profile",
