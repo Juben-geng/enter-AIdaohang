@@ -913,6 +913,30 @@ export type Database = {
           },
         ]
       }
+      profession_popup_history: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          shown_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          shown_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          shown_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profession_tags: {
         Row: {
           created_at: string | null
@@ -1299,6 +1323,35 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_profession_tags: {
+        Row: {
+          id: string
+          profession_tag_id: string | null
+          selected_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          profession_tag_id?: string | null
+          selected_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          profession_tag_id?: string | null
+          selected_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_profession_tags_profession_tag_id_fkey"
+            columns: ["profession_tag_id"]
+            isOneToOne: false
+            referencedRelation: "profession_tags"
             referencedColumns: ["id"]
           },
         ]

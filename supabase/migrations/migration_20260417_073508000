@@ -1,0 +1,36 @@
+
+-- 职业标签配置表
+CREATE TABLE IF NOT EXISTS profession_tags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL UNIQUE,
+  category TEXT NOT NULL,
+  display_order INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 用户职业标签选择记录
+CREATE TABLE IF NOT EXISTS user_profession_tags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  profession_tag_id UUID REFERENCES profession_tags(id) ON DELETE CASCADE,
+  selected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, profession_tag_id)
+);
+
+-- 职业标签弹窗显示记录
+CREATE TABLE IF NOT EXISTS profession_popup_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  shown_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  action TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_profession_tags_user ON user_profession_tags(user_id);
+CREATE INDEX IF NOT EXISTS idx_profession_popup_user ON profession_popup_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_profession_popup_shown ON profession_popup_history(shown_at);
+
+ALTER TABLE profession_tags ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profession_tags ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profession_popup_history ENABLE ROW LEVEL SECURITY;

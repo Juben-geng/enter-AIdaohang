@@ -24,6 +24,8 @@ import AddLinkDialog from '@/components/dashboard/AddLinkDialog';
 import LoginPromptDialog from '@/components/LoginPromptDialog';
 import OnboardingFlow from '@/components/OnboardingFlow';
 import ExportButton from '@/components/ExportButton';
+import ProfessionTagDialog from '@/components/ProfessionTagDialog';
+import { useProfessionTagPopup } from '@/hooks/useProfessionTagPopup';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -71,6 +73,9 @@ export default function DashboardAnonymous() {
   // 根据登录状态选择数据源
   const categories = user ? dbCategories : localStorage.categories;
   const isAnonymous = !user;
+
+  // 职业标签弹窗
+  const { shouldShow: shouldShowProfessionTag, setShouldShow: setShouldShowProfessionTag } = useProfessionTagPopup();
 
   useEffect(() => {
     if (user) {
@@ -496,6 +501,11 @@ export default function DashboardAnonymous() {
         onOpenChange={setShowLoginPrompt}
         usageCount={usageCount}
         remainingUsage={remainingUsage}
+      />
+
+      <ProfessionTagDialog
+        open={shouldShowProfessionTag}
+        onOpenChange={setShouldShowProfessionTag}
       />
     </div>
   );
