@@ -33,11 +33,6 @@ const adminRoutes = [
     path: '/admin',
   },
   {
-    title: '系统配置',
-    icon: Settings,
-    path: '/admin/system-config',
-  },
-  {
     title: '导航广场管理',
     icon: LayoutGrid,
     path: '/admin/navigation-square',
@@ -66,6 +61,11 @@ const adminRoutes = [
     title: '数据统计',
     icon: BarChart3,
     path: '/admin/analytics',
+  },
+  {
+    title: '系统配置',
+    icon: Settings,
+    path: '/admin/config',
   },
 ];
 

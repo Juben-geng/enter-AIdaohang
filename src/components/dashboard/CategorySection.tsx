@@ -176,7 +176,10 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
           {category.icon && (
             <span className="text-xl sm:text-2xl flex-shrink-0">{category.icon}</span>
           )}
-          <h3 className="text-base sm:text-lg font-semibold truncate flex-1">
+          <h3 
+            className="text-base sm:text-lg font-semibold truncate flex-1"
+            title={category.name}
+          >
             {category.name}
           </h3>
           <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">

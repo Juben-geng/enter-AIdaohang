@@ -133,15 +133,36 @@ export default function FriendLinksFull() {
         .order('display_order', { ascending: true })
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Fetch links RLS error:', error);
+        
+        // RLS错误回退机制 - 尝试只查询自己提交的链接
+        if (error.code === 'PGRST116' || error.message.includes('policy')) {
+          const { data: myData, error: myError } = await supabase
+            .from('friend_links')
+            .select(`
+              *,
+              profiles:submitter_id(username, email)
+            `)
+            .eq('submitter_id', user?.id)
+            .order('display_order', { ascending: true })
+            .order('created_at', { ascending: false });
+          
+          if (myError) throw myError;
+          setLinks(myData || []);
+          return;
+        }
+        throw error;
+      }
       setLinks(data || []);
     } catch (error) {
       console.error('Fetch links error:', error);
       toast({
         title: '加载失败',
-        description: '无法加载友情链接列表',
+        description: error instanceof Error ? error.message : '无法加载友情链接列表，请刷新页面重试',
         variant: 'destructive',
       });
+      setLinks([]); // 避免UI卡死
     } finally {
       setLoading(false);
     }

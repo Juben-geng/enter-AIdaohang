@@ -151,6 +151,10 @@ export const routers = [
           path: "analytics",
           element: <Analytics />,
         },
+        {
+          path: "config",
+          element: <SystemConfigManagement />,
+        },
       ],
     },
     /* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */

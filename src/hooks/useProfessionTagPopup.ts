@@ -5,11 +5,12 @@ import { supabase } from '@/integrations/supabase/client';
 /**
  * 职业标签弹窗逻辑Hook
  * 
- * 规则：
+ * 规则（从系统配置中读取）：
  * 1. 新用户第一次登录时显示
- * 2. 如果用户未选择，每周最多显示2次
+ * 2. 如果用户未选择，每周最多显示N次（可配置，默认2次）
  * 3. 如果用户已选择，不再显示
  * 4. 如果用户点击"稍后再说"或关闭，记录为一次显示
+ * 5. 最小间隔天数可配置（默认3天）
  */
 export function useProfessionTagPopup() {
   const { user, profile } = useAuth();
@@ -25,6 +26,15 @@ export function useProfessionTagPopup() {
     if (!user) return;
 
     try {
+      // 0. 读取系统配置
+      const { data: configs } = await supabase
+        .from('system_config')
+        .select('config_key, config_value')
+        .in('config_key', ['profession_popup_max_weekly', 'profession_popup_interval_days']);
+
+      const maxWeekly = parseInt(configs?.find(c => c.config_key === 'profession_popup_max_weekly')?.config_value || '2');
+      const intervalDays = parseInt(configs?.find(c => c.config_key === 'profession_popup_interval_days')?.config_value || '3');
+
       // 1. 检查用户是否已经选择过职业标签
       const { data: selections, error: selectError } = await supabase
         .from('user_profession_tags')
@@ -60,22 +70,22 @@ export function useProfessionTagPopup() {
         return;
       }
 
-      // 4. 检查本周显示次数（最多2次）
+      // 4. 检查本周显示次数（使用配置的最大次数）
       const thisWeekCount = history.length;
       
-      if (thisWeekCount >= 2) {
-        // 本周已显示2次，不再显示
+      if (thisWeekCount >= maxWeekly) {
+        // 本周已达到最大显示次数，不再显示
         setShouldShow(false);
         return;
       }
 
-      // 5. 检查最后一次显示时间（至少间隔3天）
+      // 5. 检查最后一次显示时间（使用配置的间隔天数）
       const lastShown = new Date(history[0].shown_at);
-      const threeDaysAgo = new Date();
-      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+      const minIntervalDate = new Date();
+      minIntervalDate.setDate(minIntervalDate.getDate() - intervalDays);
 
-      if (lastShown > threeDaysAgo) {
-        // 最后一次显示在3天内，不显示
+      if (lastShown > minIntervalDate) {
+        // 最后一次显示在间隔期内，不显示
         setShouldShow(false);
         return;
       }
