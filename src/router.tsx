@@ -21,6 +21,7 @@ import ContentManagement from "./pages/admin/ContentManagement";
 import FriendLinks from "./pages/admin/FriendLinks";
 import PaymentManagement from "./pages/admin/PaymentManagement";
 import Analytics from "./pages/admin/Analytics";
+import SystemConfigManagement from "./pages/admin/SystemConfigManagement";
 import TestAuth from "./pages/TestAuth";
 import AITools from "./pages/ai/AITools";
 import CustomerList from "./pages/crm/CustomerList";
