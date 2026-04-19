@@ -24,9 +24,10 @@ interface ProfessionTag {
 interface ProfessionTagDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSaveSuccess?: () => void; // 保存成功后的回调
 }
 
-export default function ProfessionTagDialog({ open, onOpenChange }: ProfessionTagDialogProps) {
+export default function ProfessionTagDialog({ open, onOpenChange, onSaveSuccess }: ProfessionTagDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [tags, setTags] = useState<ProfessionTag[]>([]);
@@ -123,6 +124,11 @@ export default function ProfessionTagDialog({ open, onOpenChange }: ProfessionTa
         title: '✅ 保存成功',
         description: '您的职业标签已保存',
       });
+
+      // 调用成功回调，通知父组件更新状态
+      if (onSaveSuccess) {
+        onSaveSuccess();
+      }
 
       onOpenChange(false);
     } catch (error) {

@@ -1,0 +1,59 @@
+
+-- ==========================================
+-- 修复职业标签相关表的 RLS 策略
+-- ==========================================
+
+-- 1. 添加 profession_tags 的认证用户查看策略
+DROP POLICY IF EXISTS "Authenticated users can view active tags" ON profession_tags;
+CREATE POLICY "Authenticated users can view active tags"
+  ON profession_tags FOR SELECT
+  TO authenticated
+  USING (is_active = true);
+
+-- 2. 为 user_profession_tags 添加策略
+ALTER TABLE user_profession_tags ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own profession tags" ON user_profession_tags;
+CREATE POLICY "Users can view own profession tags"
+  ON user_profession_tags FOR SELECT
+  TO authenticated
+  USING (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "Users can insert own profession tags" ON user_profession_tags;
+CREATE POLICY "Users can insert own profession tags"
+  ON user_profession_tags FOR INSERT
+  TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "Users can delete own profession tags" ON user_profession_tags;
+CREATE POLICY "Users can delete own profession tags"
+  ON user_profession_tags FOR DELETE
+  TO authenticated
+  USING (user_id = auth.uid());
+
+-- 3. 为 profession_popup_history 添加策略
+ALTER TABLE profession_popup_history ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own popup history" ON profession_popup_history;
+CREATE POLICY "Users can view own popup history"
+  ON profession_popup_history FOR SELECT
+  TO authenticated
+  USING (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "Users can insert own popup history" ON profession_popup_history;
+CREATE POLICY "Users can insert own popup history"
+  ON profession_popup_history FOR INSERT
+  TO authenticated
+  WITH CHECK (user_id = auth.uid());
+
+-- ==========================================
+-- 修复管理员查看所有文章和友情链接的问题
+-- 说明：确保管理员可以读取 profiles 表
+-- ==========================================
+
+-- 确保 profiles 表有正确的 SELECT 策略
+DROP POLICY IF EXISTS "Anyone can view basic profile info" ON profiles;
+CREATE POLICY "Anyone can view basic profile info"
+  ON profiles FOR SELECT
+  TO authenticated
+  USING (true);

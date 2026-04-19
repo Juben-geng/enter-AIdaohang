@@ -75,7 +75,7 @@ export default function DashboardAnonymous() {
   const isAnonymous = !user;
 
   // 职业标签弹窗
-  const { shouldShow: shouldShowProfessionTag, setShouldShow: setShouldShowProfessionTag } = useProfessionTagPopup();
+  const { shouldShow: shouldShowProfessionTag, setShouldShow: setShouldShowProfessionTag, recheckShouldShow } = useProfessionTagPopup();
 
   useEffect(() => {
     if (user) {
@@ -506,6 +506,10 @@ export default function DashboardAnonymous() {
       <ProfessionTagDialog
         open={shouldShowProfessionTag}
         onOpenChange={setShouldShowProfessionTag}
+        onSaveSuccess={() => {
+          // 保存成功后立即重新检查，确保不再显示
+          recheckShouldShow();
+        }}
       />
     </div>
   );

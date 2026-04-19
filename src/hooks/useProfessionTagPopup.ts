@@ -22,6 +22,11 @@ export function useProfessionTagPopup() {
     checkShouldShow();
   }, [user, profile]);
 
+  // 强制重新检查（用于保存后立即生效）
+  const recheckShouldShow = () => {
+    checkShouldShow();
+  };
+
   const checkShouldShow = async () => {
     if (!user) return;
 
@@ -98,5 +103,5 @@ export function useProfessionTagPopup() {
     }
   };
 
-  return { shouldShow, setShouldShow };
+  return { shouldShow, setShouldShow, recheckShouldShow };
 }
