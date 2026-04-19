@@ -76,6 +76,11 @@ export default function DashboardAnonymous() {
 
   // 职业标签弹窗
   const { shouldShow: shouldShowProfessionTag, setShouldShow: setShouldShowProfessionTag, recheckShouldShow } = useProfessionTagPopup();
+  
+  // 保存成功后的回调，重新检查是否需要显示弹窗
+  const handleProfessionTagSaveSuccess = useCallback(() => {
+    recheckShouldShow();
+  }, [recheckShouldShow]);
 
   useEffect(() => {
     if (user) {

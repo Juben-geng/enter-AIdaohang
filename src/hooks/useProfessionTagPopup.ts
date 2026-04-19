@@ -40,6 +40,12 @@ export function useProfessionTagPopup() {
       const maxWeekly = parseInt(configs?.find(c => c.config_key === 'profession_popup_max_weekly')?.config_value || '2');
       const intervalDays = parseInt(configs?.find(c => c.config_key === 'profession_popup_interval_days')?.config_value || '3');
 
+      // 如果设置为0次，永不显示
+      if (maxWeekly === 0) {
+        setShouldShow(false);
+        return;
+      }
+
       // 1. 检查用户是否已经选择过职业标签
       const { data: selections, error: selectError } = await supabase
         .from('user_profession_tags')
@@ -55,47 +61,50 @@ export function useProfessionTagPopup() {
         return;
       }
 
-      // 2. 检查弹窗历史
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      // 2. 获取本周的开始时间（周一00:00:00）
+      const now = new Date();
+      const weekStart = new Date(now);
+      const dayOfWeek = weekStart.getDay(); // 0 = 周日, 1 = 周一, ...
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 如果是周日，往回6天；否则往回到周一
+      weekStart.setDate(weekStart.getDate() - daysToMonday);
+      weekStart.setHours(0, 0, 0, 0);
 
+      // 3. 查询弹窗历史（只查本周的）
       const { data: history, error: historyError } = await supabase
         .from('profession_popup_history')
         .select('id, shown_at, action')
         .eq('user_id', user.id)
-        .gte('shown_at', sevenDaysAgo.toISOString())
+        .gte('shown_at', weekStart.toISOString())
         .order('shown_at', { ascending: false });
 
       if (historyError) throw historyError;
 
-      // 3. 判断是否应该显示
+      // 4. 判断是否应该显示
       if (!history || history.length === 0) {
-        // 首次登录，显示弹窗
+        // 首次登录或本周还没显示过，显示弹窗
         setShouldShow(true);
         return;
       }
 
-      // 4. 检查本周显示次数（使用配置的最大次数）
-      const thisWeekCount = history.length;
-      
-      if (thisWeekCount >= maxWeekly) {
+      // 5. 检查本周显示次数
+      if (history.length >= maxWeekly) {
         // 本周已达到最大显示次数，不再显示
         setShouldShow(false);
         return;
       }
 
-      // 5. 检查最后一次显示时间（使用配置的间隔天数）
+      // 6. 检查最后一次显示时间（最小间隔）
       const lastShown = new Date(history[0].shown_at);
-      const minIntervalDate = new Date();
-      minIntervalDate.setDate(minIntervalDate.getDate() - intervalDays);
+      const timeSinceLastShown = now.getTime() - lastShown.getTime();
+      const minIntervalMs = intervalDays * 24 * 60 * 60 * 1000;
 
-      if (lastShown > minIntervalDate) {
+      if (timeSinceLastShown < minIntervalMs) {
         // 最后一次显示在间隔期内，不显示
         setShouldShow(false);
         return;
       }
 
-      // 6. 可以显示
+      // 7. 可以显示
       setShouldShow(true);
     } catch (error) {
       console.error('Check profession popup error:', error);

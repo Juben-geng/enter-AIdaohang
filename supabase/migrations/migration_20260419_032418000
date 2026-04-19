@@ -1,0 +1,117 @@
+-- ==========================================
+-- 修复文章和友情链接的 RLS 策略
+-- 确保管理员（national_agent）可以查看所有数据
+-- ==========================================
+
+-- 1. articles 表的 RLS 策略
+DROP POLICY IF EXISTS "Admins can view all articles" ON articles;
+CREATE POLICY "Admins can view all articles"
+  ON articles FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.membership_type = 'national_agent'
+    )
+  );
+
+DROP POLICY IF EXISTS "Users can view own articles" ON articles;
+CREATE POLICY "Users can view own articles"
+  ON articles FOR SELECT
+  TO authenticated
+  USING (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "Users can view published articles" ON articles;
+CREATE POLICY "Users can view published articles"
+  ON articles FOR SELECT
+  TO authenticated
+  USING (status = 'published');
+
+-- 2. friend_links 表的 RLS 策略
+DROP POLICY IF EXISTS "Admins can view all friend links" ON friend_links;
+CREATE POLICY "Admins can view all friend links"
+  ON friend_links FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.membership_type = 'national_agent'
+    )
+  );
+
+DROP POLICY IF EXISTS "Users can view own friend links" ON friend_links;
+CREATE POLICY "Users can view own friend links"
+  ON friend_links FOR SELECT
+  TO authenticated
+  USING (submitter_id = auth.uid());
+
+DROP POLICY IF EXISTS "Users can view approved friend links" ON friend_links;
+CREATE POLICY "Users can view approved friend links"
+  ON friend_links FOR SELECT
+  TO authenticated
+  USING (status = 'approved');
+
+-- 3. 确保管理员可以修改这些表
+DROP POLICY IF EXISTS "Admins can update articles" ON articles;
+CREATE POLICY "Admins can update articles"
+  ON articles FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.membership_type = 'national_agent'
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.membership_type = 'national_agent'
+    )
+  );
+
+DROP POLICY IF EXISTS "Admins can delete articles" ON articles;
+CREATE POLICY "Admins can delete articles"
+  ON articles FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.membership_type = 'national_agent'
+    )
+  );
+
+DROP POLICY IF EXISTS "Admins can update friend links" ON friend_links;
+CREATE POLICY "Admins can update friend links"
+  ON friend_links FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.membership_type = 'national_agent'
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.membership_type = 'national_agent'
+    )
+  );
+
+DROP POLICY IF EXISTS "Admins can delete friend links" ON friend_links;
+CREATE POLICY "Admins can delete friend links"
+  ON friend_links FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles 
+      WHERE profiles.id = auth.uid() 
+      AND profiles.membership_type = 'national_agent'
+    )
+  );
