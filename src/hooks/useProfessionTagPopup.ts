@@ -17,9 +17,19 @@ export function useProfessionTagPopup() {
   const [shouldShow, setShouldShow] = useState(false);
 
   useEffect(() => {
-    if (!user || !profile) return;
+    if (!user || !profile) {
+      setShouldShow(false);
+      return;
+    }
+
+    // 如果用户已选择过职业标签，直接不显示
+    if (profile.profession_selected) {
+      setShouldShow(false);
+      return;
+    }
 
     checkShouldShow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, profile]);
 
   // 强制重新检查（用于保存后立即生效）

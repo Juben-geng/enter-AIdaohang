@@ -1,0 +1,16 @@
+-- ==========================================
+-- 添加外键关系，使 PostgREST 关联查询可用
+-- 这是文章和友情链接加载失败的根本原因
+-- ==========================================
+
+-- 1. articles.user_id → profiles.id
+ALTER TABLE articles
+  ADD CONSTRAINT fk_articles_user_id
+  FOREIGN KEY (user_id) REFERENCES profiles(id)
+  ON DELETE CASCADE;
+
+-- 2. friend_links.submitter_id → profiles.id
+ALTER TABLE friend_links
+  ADD CONSTRAINT fk_friend_links_submitter_id
+  FOREIGN KEY (submitter_id) REFERENCES profiles(id)
+  ON DELETE SET NULL;

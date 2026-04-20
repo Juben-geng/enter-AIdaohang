@@ -171,13 +171,13 @@ export default function CategorySection({ category, onAddLink, onRefresh }: Cate
     <Card className="p-4 sm:p-6 space-y-4 card-hover hover:border-primary/50">
       {/* Header - 优化移动端布局 */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        {/* 标题区域 - 确保标题能完整显示 */}
-        <div className="flex items-center gap-2 flex-1 min-w-[120px]">
+        {/* 标题区域 */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           {category.icon && (
             <span className="text-xl sm:text-2xl flex-shrink-0">{category.icon}</span>
           )}
           <h3 
-            className="text-base sm:text-lg font-semibold flex-1 break-words"
+            className="text-base sm:text-lg font-semibold whitespace-nowrap"
             title={category.name}
           >
             <span style={{ color: category.color || undefined }}>

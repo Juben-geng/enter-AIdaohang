@@ -132,45 +132,13 @@ export default function ContentManagementFull() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Fetch articles RLS error:', error);
-        // 如果是RLS错误，可能是管理员权限问题，尝试只查询自己的文章
-        if (error.code === 'PGRST116' || error.message.includes('policy')) {
-          try {
-            const { data: myData, error: myError } = await supabase
-              .from('articles')
-              .select(`
-                *,
-                profiles:user_id(username, email)
-              `)
-              .eq('user_id', user.id)
-              .order('created_at', { ascending: false });
-            
-            if (myError) {
-              console.error('Fetch my articles error:', myError);
-              // 即使失败也不抛出错误，只是显示空列表
-              setArticles([]);
-              toast({
-                title: '提示',
-                description: '暂时无法加载文章列表，您可以尝试创建新文章',
-                variant: 'default',
-              });
-            } else {
-              setArticles(myData || []);
-            }
-            return;
-          } catch (fallbackError) {
-            console.error('Fallback fetch error:', fallbackError);
-            setArticles([]);
-            return;
-          }
-        }
-        // 其他错误也不抛出，只显示空列表
-        setArticles([]);
+        console.error('Fetch articles error:', error);
         toast({
           title: '加载失败',
-          description: '无法加载文章列表，请稍后重试',
+          description: error.message || '无法加载文章列表，请刷新页面重试',
           variant: 'destructive',
         });
+        setArticles([]);
         return;
       }
       

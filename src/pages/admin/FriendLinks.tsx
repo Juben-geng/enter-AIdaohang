@@ -136,48 +136,13 @@ export default function FriendLinksFull() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Fetch links RLS error:', error);
-        
-        // RLS错误回退机制 - 尝试只查询自己提交的链接
-        if (error.code === 'PGRST116' || error.message.includes('policy')) {
-          try {
-            const { data: myData, error: myError } = await supabase
-              .from('friend_links')
-              .select(`
-                *,
-                profiles:submitter_id(username, email)
-              `)
-              .eq('submitter_id', user.id)
-              .order('display_order', { ascending: true })
-              .order('created_at', { ascending: false });
-            
-            if (myError) {
-              console.error('Fetch my links error:', myError);
-              // 即使失败也不抛出错误，只是显示空列表
-              setLinks([]);
-              toast({
-                title: '提示',
-                description: '暂时无法加载友情链接列表，您可以尝试添加新链接',
-                variant: 'default',
-              });
-            } else {
-              setLinks(myData || []);
-            }
-            return;
-          } catch (fallbackError) {
-            console.error('Fallback fetch error:', fallbackError);
-            setLinks([]);
-            return;
-          }
-        }
-        
-        // 其他错误也不抛出，只显示空列表
-        setLinks([]);
+        console.error('Fetch links error:', error);
         toast({
           title: '加载失败',
-          description: '无法加载友情链接列表，请稍后重试',
+          description: error.message || '无法加载友情链接列表，请刷新页面重试',
           variant: 'destructive',
         });
+        setLinks([]);
         return;
       }
       

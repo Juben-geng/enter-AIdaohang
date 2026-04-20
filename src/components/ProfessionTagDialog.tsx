@@ -17,8 +17,8 @@ import { Briefcase, X } from 'lucide-react';
 interface ProfessionTag {
   id: string;
   name: string;
-  category: string;
-  display_order: number;
+  icon: string | null;
+  sort_order: number;
 }
 
 interface ProfessionTagDialogProps {
@@ -47,7 +47,7 @@ export default function ProfessionTagDialog({ open, onOpenChange, onSaveSuccess 
         .from('profession_tags')
         .select('*')
         .eq('is_active', true)
-        .order('display_order', { ascending: true });
+        .order('sort_order', { ascending: true });
 
       if (error) throw error;
       setTags(data || []);
@@ -111,6 +111,12 @@ export default function ProfessionTagDialog({ open, onOpenChange, onSaveSuccess 
         .insert(insertData);
 
       if (insertError) throw insertError;
+
+      // 标记用户已选择职业标签
+      await supabase
+        .from('profiles')
+        .update({ profession_selected: true })
+        .eq('id', user.id);
 
       // 记录弹窗历史
       await supabase
